@@ -1,20 +1,20 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Més enllà d'Orió - Exploració i Viatge Espacial",
-  description: "Canal de divulgació i blog per apropar l'astronomia i els fenòmens de l'univers a tothom.",
+  title: "Més enllà d'Orió - Tecnologia, Estafes i Coses Random",
+  description: "Tecnologia, històries increïbles, criptomonedes i curiositats. Parlem de tot allò que ens fascina i ens explota el cap.",
   openGraph: {
-    title: "Més enllà d'Orió - Exploració i Viatge Espacial",
-    description: "Canal de divulgació i blog per apropar l'astronomia a tothom.",
+    title: "Més enllà d'Orió - Tecnologia, Estafes i Coses Random",
+    description: "Tecnologia, històries increïbles, criptomonedes i curiositats. Parlem de tot allò que ens fascina i ens explota el cap.",
     images: ["https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1200&q=80"],
   }
 };
 
 export default async function Home() {
   const mockVideos = [
-    { id: "1", title: "L'Univers Ocult: Forats Negres i Matèria Fosca", thumbnail: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800&q=80" },
-    { id: "2", title: "Viatjant cap a Mart: El Futur de la Humanitat", thumbnail: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=800&q=80" },
-    { id: "3", title: "Telescopi James Webb: Noves Imatges Impressionants", thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80" },
+    { id: "1", title: "La gran estafa de les Crypto: Com van robar milions", thumbnail: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800&q=80" },
+    { id: "2", title: "Gadgets inútils que la gent segueix comprant", thumbnail: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=800&q=80" },
+    { id: "3", title: "El misteri d'Internet que ningú ha resolt", thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80" },
   ];
 
   return (
@@ -31,10 +31,10 @@ export default async function Home() {
       }}>
         <div style={{ position: 'relative', zIndex: 10, maxWidth: '800px' }}>
           <h1 style={{ fontSize: '4rem', fontWeight: 800, lineHeight: 1.1, marginBottom: '1.5rem', letterSpacing: '-0.03em' }}>
-            Explora els límits de l&apos;espai
+            Tecnologia, estafes<br /> i coses random
           </h1>
           <p style={{ fontSize: '1.35rem', opacity: 0.9, marginBottom: '3rem', maxWidth: '650px', lineHeight: 1.6, fontWeight: 300 }}>
-            Benvingut a <strong>Més enllà d&apos;Orió</strong>. Connecta amb vídeos impressionants sobre el nostre univers i llegeix els articles més autèntics, escrits des de la Terra.
+            Benvingut a <strong>Més enllà d&apos;Orió</strong>. Històries de fraus, criptomonedes, reflexions sobre el futur de la tecnologia i casos totalment <i>random</i> que et faran explotar el cap.
           </p>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
             <Link href="/blog" className="btn" style={{ background: 'white', color: 'var(--primary-dark)', fontSize: '1.1rem', padding: '1rem 2rem', borderRadius: '12px' }}>
