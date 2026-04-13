@@ -12,9 +12,9 @@ export const metadata = {
 
 export default async function Home() {
   const mockVideos = [
+    { id: "s4ycv5hkAPk", title: "Vídeo Destacat: Benvinguts al canal", thumbnail: "https://img.youtube.com/vi/s4ycv5hkAPk/maxresdefault.jpg" },
     { id: "1", title: "La gran estafa de les Crypto: Com van robar milions", thumbnail: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800&q=80" },
     { id: "2", title: "Gadgets inútils que la gent segueix comprant", thumbnail: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=800&q=80" },
-    { id: "3", title: "El misteri d'Internet que ningú ha resolt", thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80" },
   ];
 
   return (
@@ -46,6 +46,20 @@ export default async function Home() {
           </div>
         </div>
         <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: '700px', height: '700px', background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 60%)', borderRadius: '50%', pointerEvents: 'none' }}></div>
+      </section>
+      
+      {/* Featured Video Player */}
+      <section style={{ maxWidth: '900px', margin: '0 auto', width: '100%' }}>
+        <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', background: '#000' }}>
+          <iframe 
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            src="https://www.youtube.com/embed/s4ycv5hkAPk"
+            title="Vídeo Destacat"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowFullScreen>
+          </iframe>
+        </div>
       </section>
 
       {/* Videos Section */}
