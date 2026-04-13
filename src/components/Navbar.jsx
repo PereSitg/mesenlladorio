@@ -18,6 +18,7 @@ export default function Navbar() {
         <nav style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
           <Link href="/" style={{ fontWeight: 500 }}>Inici</Link>
           <Link href="/blog" style={{ fontWeight: 500 }}>Blog</Link>
+          <Link href="/youtube" style={{ fontWeight: 500 }}>YouTube</Link>
           <Link href="/about" style={{ fontWeight: 500 }}>Sobre nosaltres</Link>
           <div style={{ paddingLeft: '1rem', borderLeft: '1px solid rgba(255,255,255,0.3)' }}>
             <Link href="/dashboard" className="btn" style={{ padding: '0.4rem 1rem', background: 'white', color: 'var(--primary-blue)', fontSize: '0.9rem' }}>

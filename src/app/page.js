@@ -40,7 +40,7 @@ export default async function Home() {
             <Link href="/blog" className="btn" style={{ background: 'white', color: 'var(--primary-dark)', fontSize: '1.1rem', padding: '1rem 2rem', borderRadius: '12px' }}>
               Llegir el Blog
             </Link>
-            <a href="https://youtube.com" className="btn" style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', fontSize: '1.1rem', padding: '1rem 2rem', borderRadius: '12px' }}>
+            <a href="https://www.youtube.com/channel/UCxhIYuLtgo_apR3rzl82flA" target="_blank" rel="noopener noreferrer" className="btn" style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', fontSize: '1.1rem', padding: '1rem 2rem', borderRadius: '12px' }}>
               Canal de YouTube
             </a>
           </div>
@@ -81,7 +81,7 @@ export default async function Home() {
               </div>
               <div style={{ padding: '1.75rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'white' }}>
                 <h3 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '1.5rem', lineHeight: 1.4, color: 'var(--foreground)' }}>{video.title}</h3>
-                <a href={`https://youtube.com/watch?v=${video.id}`} className="btn" style={{ textAlign: 'center', background: '#FF0000', width: '100%', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+                <a href={`https://youtube.com/watch?v=${video.id}`} target="_blank" rel="noopener noreferrer" className="btn" style={{ textAlign: 'center', background: '#FF0000', width: '100%', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
                   <svg style={{ width: 24, height: 24, fill: 'white' }} viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
                   Veure Vídeo
                 </a>
