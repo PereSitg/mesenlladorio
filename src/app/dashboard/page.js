@@ -410,8 +410,20 @@ export default function Dashboard() {
         <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid var(--primary-blue)', paddingBottom: '0.5rem' }}>
              <h2 style={{ margin: 0 }}>{currentPost ? 'Editar Article' : 'Nou Article'}</h2>
-             <span style={{ fontSize: '0.9rem', color: 'var(--gray-500)' }}>Pas 2: Detalls i Fotos</span>
+             <span style={{ fontSize: '0.9rem', color: 'var(--gray-500)' }}>Detalls i Contingut</span>
           </header>
+
+          {/* IMPORTACIÓ DE DOCUMENTS - RESTAURAT PER A L'USUARI */}
+          <div style={{ padding: '1.2rem', background: 'var(--primary-light)', borderRadius: '12px', border: '1px solid var(--primary-blue)', marginBottom: '1.5rem' }}>
+             <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.6rem', fontSize: '1rem', color: 'var(--primary-dark)' }}>
+                📂 Importar Contingut (Word o PDF):
+             </label>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <input type="file" accept=".pdf,.doc,.docx" onChange={handleDocUpload} style={{ fontSize: '0.9rem', flex: 1 }} />
+                {isExtracting && <p style={{ color: 'var(--primary-blue)', fontSize: '0.8rem', fontWeight: 600 }}>⌛ Llegint document...</p>}
+             </div>
+             <p style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.5rem' }}>Això omplirà automàticament el títol i el cos de l'article.</p>
+          </div>
           
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
             <input type="text" placeholder="Títol" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value, slug: generateSlug(e.target.value)})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
