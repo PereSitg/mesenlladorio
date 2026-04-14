@@ -127,18 +127,70 @@ export default function Dashboard() {
     setView('form');
   };
 
+  const handleDocUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsExtracting(true);
+    try {
+      if (file.type === "application/pdf") {
+        const pdf = await pdfjsLib.getDocument(await file.arrayBuffer()).promise;
+        let text = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          text += content.items.map(item => item.str).join(" ") + "\n";
+        }
+        // Intentem posar el títol si és possible
+        const titleMatch = text.trim().split("\n")[0];
+        setFormData(prev => ({ ...prev, content: text, title: prev.title || titleMatch || "" }));
+      } else {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        const text = result.value;
+        const titleMatch = text.trim().split("\n")[0];
+        setFormData(prev => ({ ...prev, content: text, title: prev.title || titleMatch || "" }));
+      }
+    } catch (err) { 
+      console.error(err);
+      alert("Error al llegir el document."); 
+    }
+    finally { setIsExtracting(false); }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitLoading) return;
+    
     setSubmitLoading(true);
+    const timeout = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Temps d'espera esgotat (20s). La connexió és lenta.")), 20000)
+    );
+
     try {
-      let finalImageUrl = formData.imageUrl;
-      if (imageFile) finalImageUrl = await uploadImage(imageFile);
-      const postPayload = { ...formData, imageUrl: finalImageUrl, createdAt: currentPost ? currentPost.createdAt : new Date().toISOString() };
-      if (currentPost) await updatePost(currentPost.id, postPayload);
-      else await createPost(postPayload);
-      await loadPosts();
+      const process = (async () => {
+        let finalImageUrl = formData.imageUrl;
+        if (imageFile) finalImageUrl = await uploadImage(imageFile, "posts");
+        
+        const postPayload = { 
+          ...formData, 
+          imageUrl: finalImageUrl || "", 
+          createdAt: currentPost ? currentPost.createdAt : new Date().toISOString() 
+        };
+        
+        if (currentPost) await updatePost(currentPost.id, postPayload);
+        else await createPost(postPayload);
+        
+        await loadPosts();
+        return true;
+      })();
+
+      await Promise.race([process, timeout]);
       setView('list');
-    } catch (err) { alert("Error al guardar l'article."); }
+      alert("Article guardat correctament! ✨");
+    } catch (err) { 
+      console.error(err);
+      alert("Error al guardar l'article: " + (err.message || "Error desconegut")); 
+    }
     finally { setSubmitLoading(false); }
   };
 
@@ -245,13 +297,28 @@ export default function Dashboard() {
 
   const handlePageSubmit = async (e) => {
     e.preventDefault();
+    if (submitLoading) return;
+    
     setSubmitLoading(true);
+    const timeout = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Temps d'espera esgotat (20s).")), 20000)
+    );
+
     try {
-      if (currentPage) await updatePage(currentPage.id, pageFormData);
-      else await createPage(pageFormData);
-      await loadPages();
+      const process = (async () => {
+        if (currentPage) await updatePage(currentPage.id, pageFormData);
+        else await createPage(pageFormData);
+        await loadPages();
+        return true;
+      })();
+
+      await Promise.race([process, timeout]);
       setView('pages');
-    } catch (err) { alert("Error al guardar pàgina."); }
+      alert("Pàgina guardada correctament! ✨");
+    } catch (err) { 
+      console.error(err);
+      alert("Error al guardar pàgina: " + (err.message || "Error desconegut")); 
+    }
     finally { setSubmitLoading(false); }
   };
 
@@ -330,16 +397,35 @@ export default function Dashboard() {
         <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
           <h2>{currentPost ? 'Editar Article' : 'Nou Article'}</h2>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginTop: '1.5rem' }}>
+            <div style={{ padding: '1.5rem', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1', marginBottom: '1rem' }}>
+              <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.8rem', color: 'var(--primary-dark)' }}>📚 Puja Document (PDF/DOC) per omplir títol i contingut:</label>
+              <input 
+                type="file" 
+                accept=".pdf,.doc,.docx" 
+                onChange={handleDocUpload} 
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '6px' }} 
+              />
+              {isExtracting && <p style={{ color: 'var(--primary-blue)', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: 600 }}>Extraient dades del document...</p>}
+            </div>
+
             <input type="text" placeholder="Títol" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value, slug: generateSlug(e.target.value)})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <input type="checkbox" id="isIndexedPost" checked={formData.isIndexed} onChange={e => setFormData({...formData, isIndexed: e.target.checked})} />
               <label htmlFor="isIndexedPost">Indexar a Google</label>
             </div>
-            <textarea placeholder="Resum" value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} style={{ padding: '0.8rem', minHeight: '80px' }} />
-            <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} />
-            <textarea placeholder="Contingut (Markdown)" value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} required style={{ padding: '0.8rem', minHeight: '300px' }} />
+            <textarea placeholder="Resum" value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} style={{ padding: '0.8rem', minHeight: '80px', borderRadius: '8px' }} />
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontWeight: 600 }}>Foto de l'article:</label>
+              <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} />
+            </div>
+
+            <textarea placeholder="Contingut (Markdown)" value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} required style={{ padding: '0.8rem', minHeight: '300px', borderRadius: '8px' }} />
+            
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button type="submit" className="btn" style={{ flex: 1 }}>Desar</button>
+              <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>
+                {submitLoading ? 'Sincronitzant...' : 'Desar'}
+              </button>
               <button type="button" className="btn" onClick={() => setView('list')} style={{ background: 'var(--gray-200)', color: 'black' }}>Cancel·lar</button>
             </div>
           </form>
@@ -380,7 +466,9 @@ export default function Dashboard() {
             </div>
             <textarea placeholder="Contingut (Markdown)" value={pageFormData.content} onChange={e => setPageFormData({...pageFormData, content: e.target.value})} required style={{ padding: '0.8rem', minHeight: '400px' }} />
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button type="submit" className="btn" style={{ flex: 1 }}>Desar Pàgina</button>
+              <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>
+                {submitLoading ? 'Sincronitzant...' : 'Desar Pàgina'}
+              </button>
               <button type="button" className="btn" onClick={() => setView('pages')} style={{ background: 'var(--gray-200)', color: 'black' }}>Cancel·lar</button>
             </div>
           </form>
