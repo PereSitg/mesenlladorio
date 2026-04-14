@@ -52,7 +52,8 @@ export default function Dashboard() {
     videoId: "",
     title: "",
     customThumbnailUrl: "",
-    isFeatured: false
+    isFeatured: false,
+    showOnHome: false
   });
 
   // Pàgines
@@ -150,14 +151,15 @@ export default function Dashboard() {
     if (video) {
       setCurrentVideo(video);
       setVideoFormData({ 
-        videoId: video.videoId, 
+        videoId: video.videoId || "", 
         title: video.title, 
         customThumbnailUrl: video.customThumbnailUrl || "",
-        isFeatured: video.isFeatured || false 
+        isFeatured: video.isFeatured || false,
+        showOnHome: video.showOnHome || false
       });
     } else {
       setCurrentVideo(null);
-      setVideoFormData({ videoId: "", title: "", customThumbnailUrl: "", isFeatured: false });
+      setVideoFormData({ videoId: "", title: "", customThumbnailUrl: "", isFeatured: false, showOnHome: false });
     }
     setVideoThumbnailFile(null);
     setView('video-form');
@@ -386,26 +388,33 @@ export default function Dashboard() {
       {/* VIDEO FORM */}
       {view === 'video-form' && (
         <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <h2>{currentVideo ? 'Editar Vídeo' : 'Nou Vídeo'}</h2>
+          <h2>{currentVideo ? 'Editar Vídeo/Anunci' : 'Nou Vídeo/Anunci'}</h2>
           <form onSubmit={handleVideoSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginTop: '1.5rem' }}>
             <div>
-              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>ID de YouTube (ex: s4ycv5hkAPk):</label>
-              <input type="text" value={videoFormData.videoId} onChange={e => setVideoFormData({...videoFormData, videoId: e.target.value})} required style={{width: '100%', padding: '0.8rem'}} />
+              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>ID de YouTube (deixa-ho buit si és només un anunci):</label>
+              <input type="text" value={videoFormData.videoId} onChange={e => setVideoFormData({...videoFormData, videoId: e.target.value})} placeholder="Ex: s4ycv5hkAPk" style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)'}} />
             </div>
             <div>
-              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>Títol del Vídeo:</label>
-              <input type="text" value={videoFormData.title} onChange={e => setVideoFormData({...videoFormData, title: e.target.value})} required style={{width: '100%', padding: '0.8rem'}} />
+              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>Títol:</label>
+              <input type="text" value={videoFormData.title} onChange={e => setVideoFormData({...videoFormData, title: e.target.value})} required style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)'}} />
             </div>
             <div>
-              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>Foto personalitzada (opcional):</label>
-              <input type="file" accept="image/*" onChange={e => setVideoThumbnailFile(e.target.files[0])} />
+              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>Foto personalitzada (molt recomanada si és un anunci):</label>
+              <input type="file" accept="image/*" onChange={e => setVideoThumbnailFile(e.target.files[0])} style={{ marginBottom: '0.5rem' }} />
+              {videoThumbnailFile && <p style={{fontSize: '0.8rem', color: 'var(--primary-blue)', margin: '0.2rem 0'}}>Foto seleccionada.</p>}
               {videoFormData.customThumbnailUrl && !videoThumbnailFile && (
-                <p style={{fontSize: '0.8rem', color: 'green', marginTop: '0.5rem'}}>Ja té una foto pujada.</p>
+                <p style={{fontSize: '0.8rem', color: 'green', margin: '0.2rem 0'}}>Ja té una foto pujada.</p>
               )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input type="checkbox" id="vFeatured" checked={videoFormData.isFeatured} onChange={e => setVideoFormData({...videoFormData, isFeatured: e.target.checked})} />
-              <label htmlFor="vFeatured">Vídeo Destacat</label>
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input type="checkbox" id="vFeatured" checked={videoFormData.isFeatured} onChange={e => setVideoFormData({...videoFormData, isFeatured: e.target.checked})} />
+                <label htmlFor="vFeatured">Vídeo Destacat (Principal)</label>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input type="checkbox" id="vHome" checked={videoFormData.showOnHome} onChange={e => setVideoFormData({...videoFormData, showOnHome: e.target.checked})} />
+                <label htmlFor="vHome">Mostrar al Home</label>
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
               <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>{submitLoading ? 'Sincronitzant...' : 'Desar'}</button>

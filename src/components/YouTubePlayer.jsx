@@ -5,12 +5,15 @@ import { useState } from "react";
 export default function YouTubePlayer({ videoId, title, isFeatured = false, customThumbnailUrl = null }) {
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Si no hi ha videoId, és un anunci (només foto)
+  const isAnnouncement = !videoId;
+
   // Si tenim una miniatura personalitzada, la fem servir. 
   // Si no, fem servir la de YouTube per defecte
-  const thumbnailUrl = customThumbnailUrl || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-  const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+  const thumbnailUrl = customThumbnailUrl || (videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1200&q=80");
+  const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : "";
 
-  if (isPlaying) {
+  if (isPlaying && videoId) {
     return (
       <div style={{ 
         position: 'relative', 
@@ -35,14 +38,14 @@ export default function YouTubePlayer({ videoId, title, isFeatured = false, cust
 
   return (
     <div 
-      onClick={() => setIsPlaying(true)}
+      onClick={() => !isAnnouncement && setIsPlaying(true)}
       style={{ 
         position: 'relative', 
         width: '100%', 
         aspectRatio: '16/9', 
         overflow: 'hidden', 
         borderRadius: isFeatured ? '24px' : '16px', 
-        cursor: 'pointer',
+        cursor: isAnnouncement ? 'default' : 'pointer',
         boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
         background: 'var(--gray-200)'
       }}
@@ -59,32 +62,33 @@ export default function YouTubePlayer({ videoId, title, isFeatured = false, cust
         }} 
         className="zoom-on-hover" 
         onError={(e) => {
-          // Si la miniatura maxresdefault no existeix, provem amb hqdefault
-          e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+          if (videoId) e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
         }}
       />
       
-      {/* Play Button Overlay */}
-      <div style={{ 
-        position: 'absolute', 
-        top: '50%', 
-        left: '50%', 
-        transform: 'translate(-50%, -50%)', 
-        background: 'rgba(255,0,0,0.9)', 
-        borderRadius: '50%', 
-        width: isFeatured ? '80px' : '60px', 
-        height: isFeatured ? '80px' : '60px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        opacity: 0.9,
-        transition: 'all 0.3s ease',
-        boxShadow: '0 10px 20px rgba(255,0,0,0.3)'
-      }} className="play-btn">
-         <svg style={{ width: isFeatured ? 40 : 30, height: isFeatured ? 40 : 30, fill: 'white', marginLeft: '4px' }} viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-      </div>
+      {/* Play Button Overlay - NOMÉS SI NO ÉS ANUNCI */}
+      {!isAnnouncement && (
+        <div style={{ 
+          position: 'absolute', 
+          top: '50%', 
+          left: '50%', 
+          transform: 'translate(-50%, -50%)', 
+          background: 'rgba(255,0,0,0.9)', 
+          borderRadius: '50%', 
+          width: isFeatured ? '80px' : '60px', 
+          height: isFeatured ? '80px' : '60px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          opacity: 0.9,
+          transition: 'all 0.3s ease',
+          boxShadow: '0 10px 20px rgba(255,0,0,0.3)'
+        }} className="play-btn">
+           <svg style={{ width: isFeatured ? 40 : 30, height: isFeatured ? 40 : 30, fill: 'white', marginLeft: '4px' }} viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      )}
 
-      {/* Info Overlay (Optional) */}
+      {/* Info Overlay */}
       <div style={{ 
         position: 'absolute', 
         bottom: 0, 
@@ -94,13 +98,15 @@ export default function YouTubePlayer({ videoId, title, isFeatured = false, cust
         background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
         color: 'white'
       }}>
-        <p style={{ margin: 0, fontSize: isFeatured ? '0.9rem' : '0.8rem', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Vídeo {isFeatured ? 'Destacat' : ''}</p>
+        <p style={{ margin: 0, fontSize: isFeatured ? '0.9rem' : '0.8rem', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          {isAnnouncement ? 'Pròxim Vídeo' : `Vídeo ${isFeatured ? 'Destacat' : ''}`}
+        </p>
         <h3 style={{ margin: '0.2rem 0 0', fontSize: isFeatured ? '1.5rem' : '1.1rem', fontWeight: 700 }}>{title}</h3>
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `
         .yt-player-container:hover .zoom-on-hover {
-           transform: scale(1.05);
+           transform: ${isAnnouncement ? 'none' : 'scale(1.05)'};
         }
         .yt-player-container:hover .play-btn {
            transform: translate(-50%, -50%) scale(1.15);
