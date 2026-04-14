@@ -1,22 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { auth, provider } from "@/lib/firebase/config";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { getAllPosts, createPost, updatePost, deletePost } from "@/lib/firebase/posts";
 import { uploadImage } from "@/lib/firebase/storage";
+import mammoth from "mammoth";
+
+// Carreguem dinàmicament PDF.js només al client
+let pdfjsLib;
+const initPdf = async () => {
+  if (!pdfjsLib) {
+    pdfjsLib = await import("pdfjs-dist/build/pdf");
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  }
+  return pdfjsLib;
+};
 
 export default function Dashboard() {
   const AUTHORIZED_EMAIL = "pbadialorenz@gmail.com";
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const docInputRef = useRef(null);
   
   // Estats per a la gestió d'articles
   const [view, setView] = useState('menu'); // 'menu', 'list', 'form'
   const [posts, setPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState(null);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
 
   // Camps del formulari
   const [formData, setFormData] = useState({
@@ -29,6 +42,7 @@ export default function Dashboard() {
   const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
+    initPdf(); // Inicialitzem PDF.js quan el component es carrega
     const unsub = onAuthStateChanged(auth, (usr) => {
       if (usr && usr.email !== AUTHORIZED_EMAIL) {
         signOut(auth);
@@ -86,6 +100,86 @@ export default function Dashboard() {
     setView('form');
   };
 
+  const generateExcerpt = (text) => {
+    if (!text) return "";
+    const words = text.trim().split(/\s+/);
+    if (words.length <= 20) return text.trim();
+    return words.slice(0, 20).join(" ") + "...";
+  };
+
+  const generateSlug = (title) => {
+    return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+  };
+
+  const handleDocumentUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsExtracting(true);
+    const reader = new FileReader();
+
+    try {
+      if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+        // Tractar Word (.docx)
+        reader.onload = async (event) => {
+          const arrayBuffer = event.target.result;
+          const result = await mammoth.extractRawText({ arrayBuffer });
+          const text = result.value;
+          
+          const lines = text.split('\n').filter(l => l.trim().length > 0);
+          const title = lines[0] || file.name.replace('.docx', '');
+          const content = text;
+          const excerpt = generateExcerpt(text);
+
+          setFormData({
+            ...formData,
+            title,
+            slug: generateSlug(title),
+            content,
+            excerpt
+          });
+          setIsExtracting(false);
+        };
+        reader.readAsArrayBuffer(file);
+      } 
+      else if (file.type === "application/pdf") {
+        // Tractar PDF
+        reader.onload = async (event) => {
+          const typedarray = new Uint8Array(event.target.result);
+          const pdf = await pdfjsLib.getDocument(typedarray).promise;
+          let fullText = "";
+
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            fullText += textContent.items.map(item => item.str).join(" ") + "\n";
+          }
+
+          const lines = fullText.split('\n').filter(l => l.trim().length > 0);
+          const title = lines[0] || file.name.replace('.pdf', '');
+          const excerpt = generateExcerpt(fullText);
+
+          setFormData({
+            ...formData,
+            title,
+            slug: generateSlug(title),
+            content: fullText,
+            excerpt
+          });
+          setIsExtracting(false);
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        alert("Només s'accepten fitxers .docx (Word) o .pdf");
+        setIsExtracting(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error al processar el document.");
+      setIsExtracting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitLoading(true);
@@ -97,7 +191,11 @@ export default function Dashboard() {
         finalImageUrl = await uploadImage(imageFile);
       }
 
-      const postPayload = { ...formData, imageUrl: finalImageUrl };
+      const postPayload = { 
+        ...formData, 
+        imageUrl: finalImageUrl,
+        createdAt: currentPost ? currentPost.createdAt : new Date().toISOString()
+      };
 
       if (currentPost) {
         await updatePost(currentPost.id, postPayload);
@@ -152,7 +250,7 @@ export default function Dashboard() {
           <div className="card" onClick={() => openForm()} style={{ cursor: 'pointer', textAlign: 'center', padding: '3rem' }}>
             <span style={{ fontSize: '3rem' }}>📝</span>
             <h2 style={{ marginTop: '1rem' }}>Nou Article</h2>
-            <p style={{ color: 'rgba(0,0,0,0.6)' }}>Crea un nou post amb format Markdown.</p>
+            <p style={{ color: 'rgba(0,0,0,0.6)' }}>Crea un nou post manualment o des d&apos;un fitxer.</p>
           </div>
           <div className="card" onClick={() => setView('list')} style={{ cursor: 'pointer', textAlign: 'center', padding: '3rem' }}>
             <span style={{ fontSize: '3rem' }}>📚</span>
@@ -198,13 +296,36 @@ export default function Dashboard() {
 
       {view === 'form' && (
         <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h2>{currentPost ? 'Editar Article' : 'Nou Article'}</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h2>{currentPost ? 'Editar Article' : 'Nou Article'}</h2>
+            {!currentPost && (
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input 
+                  type="file" 
+                  ref={docInputRef} 
+                  style={{ display: 'none' }} 
+                  accept=".docx,.pdf" 
+                  onChange={handleDocumentUpload} 
+                />
+                <button 
+                  type="button" 
+                  className="btn" 
+                  style={{ background: 'var(--primary-dark)', padding: '0.5rem 1rem', fontSize: '0.8rem' }}
+                  onClick={() => docInputRef.current.click()}
+                  disabled={isExtracting}
+                >
+                  {isExtracting ? 'Processant...' : '📄 Importar Word/PDF'}
+                </button>
+              </div>
+            )}
+          </div>
+
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1.5rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontWeight: 600 }}>Títol:</label>
               <input type="text" value={formData.title} onChange={e => {
                 const val = e.target.value;
-                setFormData({...formData, title: val, slug: val.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')});
+                setFormData({...formData, title: val, slug: generateSlug(val)});
               }} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -212,20 +333,23 @@ export default function Dashboard() {
               <input type="text" value={formData.slug} onChange={e => setFormData({...formData, slug: e.target.value})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontWeight: 600 }}>Extracte (Resum):</label>
+              <label style={{ fontWeight: 600 }}>Extracte (Resum - 20 primeres paraules):</label>
               <textarea value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', minHeight: '80px' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontWeight: 600 }}>Foto de portada:</label>
-              {formData.imageUrl && <img src={formData.imageUrl} style={{ width: '100px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} alt="Preview" />}
+              {formData.imageUrl && <img src={formData.imageUrl} style={{ width: '100px', height: '60px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }} alt="Preview" />}
               <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} style={{ fontSize: '0.9rem' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <label style={{ fontWeight: 600 }}>Contingut (Markdown):</label>
-              <textarea value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', minHeight: '300px', fontFamily: 'monospace' }} placeholder="# Títol h1\n\nText amb **negreta** i [enllaços](...)" />
+              <textarea value={formData.content} onChange={e => {
+                const text = e.target.value;
+                setFormData({...formData, content: text, excerpt: generateExcerpt(text)});
+              }} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', minHeight: '300px', fontFamily: 'monospace' }} placeholder="# Títol h1\n\nText amb **negreta** i [enllaços](...)" />
             </div>
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>{submitLoading ? 'Guardant...' : 'Publicar Article'}</button>
+              <button type="submit" className="btn" disabled={submitLoading || isExtracting} style={{ flex: 1 }}>{submitLoading ? 'Guardant...' : 'Publicar Article'}</button>
               <button type="button" className="btn" style={{ background: 'var(--gray-200)', color: 'black' }} onClick={() => setView('list')}>Cancel·lar</button>
             </div>
           </form>
