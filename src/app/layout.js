@@ -23,3 +23,4 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+// Sincronitzat amb Firebase Project: mesenlladorio-59995
