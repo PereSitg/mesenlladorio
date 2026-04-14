@@ -6,7 +6,7 @@ import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { getAllPosts, createPost, updatePost, deletePost } from "@/lib/firebase/posts";
 import { getAllVideos, createVideo, updateVideo, deleteVideo } from "@/lib/firebase/videos";
 import { getAllPages, createPage, updatePage, deletePage } from "@/lib/firebase/pages";
-import { uploadImage } from "@/lib/firebase/storage";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 import mammoth from "mammoth";
 
 // Carreguem dinàmicament PDF.js només al client
@@ -42,6 +42,8 @@ export default function Dashboard() {
     imageUrl: "",
     isIndexed: true
   });
+  const [articleImageFile, setArticleImageFile] = useState(null);
+  const [uploadingArticle, setUploadingArticle] = useState(false);
 
   // Vídeos
   const [videosList, setVideosList] = useState([]);
@@ -53,6 +55,8 @@ export default function Dashboard() {
     isFeatured: false,
     showOnHome: false
   });
+  const [videoImageFile, setVideoImageFile] = useState(null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   // Pàgines
   const [pagesList, setPagesList] = useState([]);
@@ -61,8 +65,11 @@ export default function Dashboard() {
     title: "",
     slug: "",
     content: "",
+    imageUrl: "",
     isIndexed: true
   });
+  const [pageImageFile, setPageImageFile] = useState(null);
+  const [uploadingPage, setUploadingPage] = useState(false);
 
   useEffect(() => {
     initPdf();
@@ -121,8 +128,22 @@ export default function Dashboard() {
       setCurrentPost(null);
       setFormData({ title: "", slug: "", excerpt: "", content: "", imageUrl: "", isIndexed: true });
     }
-    setImageFile(null);
+    setArticleImageFile(null);
     setView('form');
+  };
+
+  const handleArticleImageUpload = async () => {
+    if (!articleImageFile) return;
+    setUploadingArticle(true);
+    try {
+      const url = await uploadToCloudinary(articleImageFile);
+      if (url) {
+        setFormData(prev => ({ ...prev, imageUrl: url }));
+        setArticleImageFile(null);
+        alert("Imatge pujada a Cloudinary! 📷");
+      }
+    } catch (err) { alert("Error al pujar la imatge."); }
+    finally { setUploadingArticle(false); }
   };
 
   const handleDocUpload = async (e) => {
@@ -138,7 +159,6 @@ export default function Dashboard() {
           const content = await page.getTextContent();
           text += content.items.map(item => item.str).join(" ") + "\n";
         }
-        // Intentem posar el títol si és possible
         const titleMatch = text.trim().split("\n")[0];
         setFormData(prev => ({ ...prev, content: text, title: prev.title || titleMatch || "" }));
       } else {
@@ -192,7 +212,22 @@ export default function Dashboard() {
       setCurrentVideo(null);
       setVideoFormData({ videoId: "", title: "", customThumbnailUrl: "", isFeatured: false, showOnHome: false });
     }
+    setVideoImageFile(null);
     setView('video-form');
+  };
+
+  const handleVideoImageUpload = async () => {
+    if (!videoImageFile) return;
+    setUploadingVideo(true);
+    try {
+      const url = await uploadToCloudinary(videoImageFile);
+      if (url) {
+        setVideoFormData(prev => ({ ...prev, customThumbnailUrl: url }));
+        setVideoImageFile(null);
+        alert("Imatge pujada a Cloudinary! 📷");
+      }
+    } catch (err) { alert("Error al pujar la imatge."); }
+    finally { setUploadingVideo(false); }
   };
 
   const handleVideoSubmit = async (e) => {
@@ -238,13 +273,29 @@ export default function Dashboard() {
         title: page.title,
         slug: page.slug,
         content: page.content,
+        imageUrl: page.imageUrl || "",
         isIndexed: page.isIndexed !== undefined ? page.isIndexed : true
       });
     } else {
       setCurrentPage(null);
-      setPageFormData({ title: "", slug: "", content: "", isIndexed: true });
+      setPageFormData({ title: "", slug: "", content: "", imageUrl: "", isIndexed: true });
     }
+    setPageImageFile(null);
     setView('page-form');
+  };
+
+  const handlePageImageUpload = async () => {
+    if (!pageImageFile) return;
+    setUploadingPage(true);
+    try {
+      const url = await uploadToCloudinary(pageImageFile);
+      if (url) {
+        setPageFormData(prev => ({ ...prev, imageUrl: url }));
+        setPageImageFile(null);
+        alert("Imatge pujada a Cloudinary! 📷");
+      }
+    } catch (err) { alert("Error al pujar la imatge."); }
+    finally { setUploadingPage(false); }
   };
 
   const handlePageSubmit = async (e) => {
@@ -349,8 +400,18 @@ export default function Dashboard() {
 
             <input type="text" placeholder="Títol" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value, slug: generateSlug(e.target.value)})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
             
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>
+              <label style={{ fontWeight: 600 }}>📷 Pujar Foto a Cloudinary:</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input type="file" accept="image/*" onChange={e => setArticleImageFile(e.target.files[0])} style={{ flex: 1 }} />
+                <button type="button" onClick={handleArticleImageUpload} className="btn" disabled={!articleImageFile || uploadingArticle} style={{ padding: '0.5rem 1rem', background: '#3b82f6', fontSize: '0.9rem' }}>
+                  {uploadingArticle ? 'Pujant...' : 'Pujar'}
+                </button>
+              </div>
+            </div>
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-              <label style={{ fontWeight: 600 }}>🔗 URL de la Imatge (de l'altre programa):</label>
+              <label style={{ fontWeight: 600 }}>🔗 URL de la Imatge (s'omple sola en pujar):</label>
               <input type="text" placeholder="https://..." value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
             </div>
 
@@ -401,8 +462,18 @@ export default function Dashboard() {
             <input type="text" placeholder="Títol de la Pàgina" value={pageFormData.title} onChange={e => setPageFormData({...pageFormData, title: e.target.value, slug: generateSlug(e.target.value)})} required style={{ padding: '0.8rem', borderRadius: '8px' }} />
             <input type="text" placeholder="URL-slug" value={pageFormData.slug} onChange={e => setPageFormData({...pageFormData, slug: e.target.value})} required style={{ padding: '0.8rem' }} />
             
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>
+              <label style={{ fontWeight: 600 }}>📷 Pujar Foto a Cloudinary:</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input type="file" accept="image/*" onChange={e => setPageImageFile(e.target.files[0])} style={{ flex: 1 }} />
+                <button type="button" onClick={handlePageImageUpload} className="btn" disabled={!pageImageFile || uploadingPage} style={{ padding: '0.5rem 1rem', background: '#3b82f6', fontSize: '0.9rem' }}>
+                  {uploadingPage ? 'Pujant...' : 'Pujar'}
+                </button>
+              </div>
+            </div>
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-              <label style={{ fontWeight: 600 }}>🔗 URL de la Imatge (de l'altre programa):</label>
+              <label style={{ fontWeight: 600 }}>🔗 URL de la Imatge:</label>
               <input type="text" placeholder="https://..." value={pageFormData.imageUrl} onChange={e => setPageFormData({...pageFormData, imageUrl: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
             </div>
 
@@ -461,8 +532,19 @@ export default function Dashboard() {
               <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>Títol:</label>
               <input type="text" value={videoFormData.title} onChange={e => setVideoFormData({...videoFormData, title: e.target.value})} required style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)'}} />
             </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>
+              <label style={{ fontWeight: 600 }}>📷 Pujar Foto a Cloudinary:</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input type="file" accept="image/*" onChange={e => setVideoImageFile(e.target.files[0])} style={{ flex: 1 }} />
+                <button type="button" onClick={handleVideoImageUpload} className="btn" disabled={!videoImageFile || uploadingVideo} style={{ padding: '0.5rem 1rem', background: '#3b82f6', fontSize: '0.9rem' }}>
+                  {uploadingVideo ? 'Pujant...' : 'Pujar'}
+                </button>
+              </div>
+            </div>
+
             <div>
-              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>🔗 URL de la Foto (de l'altre programa):</label>
+              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>🔗 URL de la Foto (s'omple sola en pujar):</label>
               <input type="text" value={videoFormData.customThumbnailUrl} onChange={e => setVideoFormData({...videoFormData, customThumbnailUrl: e.target.value})} placeholder="https://..." style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)'}} />
             </div>
             <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
