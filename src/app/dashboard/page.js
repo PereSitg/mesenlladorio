@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { auth, provider } from "@/lib/firebase/config";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { getAllPosts, createPost, updatePost, deletePost } from "@/lib/firebase/posts";
+import { getAllVideos, createVideo, updateVideo, deleteVideo } from "@/lib/firebase/videos";
 import { uploadImage } from "@/lib/firebase/storage";
 import mammoth from "mammoth";
 
@@ -25,13 +26,22 @@ export default function Dashboard() {
   const docInputRef = useRef(null);
   
   // Estats per a la gestió d'articles
-  const [view, setView] = useState('menu'); // 'menu', 'list', 'form'
+  const [view, setView] = useState('menu'); // 'menu', 'list', 'form', 'videos', 'video-form'
   const [posts, setPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState(null);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
 
-  // Camps del formulari
+  // Estats per a la gestió de vídeos
+  const [videosList, setVideosList] = useState([]);
+  const [currentVideo, setCurrentVideo] = useState(null);
+  const [videoFormData, setVideoFormData] = useState({
+    videoId: "",
+    title: "",
+    isFeatured: false
+  });
+
+  // Camps del formulari d'articles
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -51,7 +61,10 @@ export default function Dashboard() {
       } else {
         setUser(usr);
         setError(null);
-        if (usr) loadPosts();
+        if (usr) {
+          loadPosts();
+          loadVideos();
+        }
       }
       setLoading(false);
     });
@@ -61,6 +74,11 @@ export default function Dashboard() {
   const loadPosts = async () => {
     const data = await getAllPosts();
     setPosts(data);
+  };
+
+  const loadVideos = async () => {
+    const data = await getAllVideos();
+    setVideosList(data);
   };
 
   const handleLogin = async () => {
@@ -82,6 +100,7 @@ export default function Dashboard() {
     setView('menu');
   };
 
+  // --- LÒGICA ARTICLES ---
   const openForm = (post = null) => {
     if (post) {
       setCurrentPost(post);
@@ -120,62 +139,40 @@ export default function Dashboard() {
 
     try {
       if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-        // Tractar Word (.docx)
         reader.onload = async (event) => {
           const arrayBuffer = event.target.result;
           const result = await mammoth.extractRawText({ arrayBuffer });
           const text = result.value;
-          
           const lines = text.split('\n').filter(l => l.trim().length > 0);
           const title = lines[0] || file.name.replace('.docx', '');
-          const content = text;
           const excerpt = generateExcerpt(text);
-
-          setFormData({
-            ...formData,
-            title,
-            slug: generateSlug(title),
-            content,
-            excerpt
-          });
+          setFormData({ ...formData, title, slug: generateSlug(title), content: text, excerpt });
           setIsExtracting(false);
         };
         reader.readAsArrayBuffer(file);
       } 
       else if (file.type === "application/pdf") {
-        // Tractar PDF
         reader.onload = async (event) => {
           const typedarray = new Uint8Array(event.target.result);
           const pdf = await pdfjsLib.getDocument(typedarray).promise;
           let fullText = "";
-
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
             const textContent = await page.getTextContent();
             fullText += textContent.items.map(item => item.str).join(" ") + "\n";
           }
-
-          const lines = fullText.split('\n').filter(l => l.trim().length > 0);
-          const title = lines[0] || file.name.replace('.pdf', '');
+          const title = fullText.split('\n')[0] || file.name.replace('.pdf', '');
           const excerpt = generateExcerpt(fullText);
-
-          setFormData({
-            ...formData,
-            title,
-            slug: generateSlug(title),
-            content: fullText,
-            excerpt
-          });
+          setFormData({ ...formData, title, slug: generateSlug(title), content: fullText, excerpt });
           setIsExtracting(false);
         };
         reader.readAsArrayBuffer(file);
       } else {
-        alert("Només s'accepten fitxers .docx (Word) o .pdf");
+        alert("Només .docx o .pdf");
         setIsExtracting(false);
       }
     } catch (err) {
-      console.error(err);
-      alert("Error al processar el document.");
+      alert("Error al processar document.");
       setIsExtracting(false);
     }
   };
@@ -185,28 +182,13 @@ export default function Dashboard() {
     setSubmitLoading(true);
     try {
       let finalImageUrl = formData.imageUrl;
-      
-      // Si hem seleccionat un fitxer nou, el pugem a Storage
-      if (imageFile) {
-        finalImageUrl = await uploadImage(imageFile);
-      }
-
-      const postPayload = { 
-        ...formData, 
-        imageUrl: finalImageUrl,
-        createdAt: currentPost ? currentPost.createdAt : new Date().toISOString()
-      };
-
-      if (currentPost) {
-        await updatePost(currentPost.id, postPayload);
-      } else {
-        await createPost(postPayload);
-      }
-
+      if (imageFile) finalImageUrl = await uploadImage(imageFile);
+      const postPayload = { ...formData, imageUrl: finalImageUrl, createdAt: currentPost ? currentPost.createdAt : new Date().toISOString() };
+      if (currentPost) await updatePost(currentPost.id, postPayload);
+      else await createPost(postPayload);
       await loadPosts();
       setView('list');
     } catch (err) {
-      console.error(err);
       alert("Error al guardar l'article.");
     } finally {
       setSubmitLoading(false);
@@ -214,9 +196,58 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id) => {
-    if (confirm("Estàs segur que vols esborrar aquest article?")) {
+    if (confirm("Estàs segur?")) {
       await deletePost(id);
       await loadPosts();
+    }
+  };
+
+  // --- LÒGICA VÍDEOS ---
+  const openVideoForm = (video = null) => {
+    if (video) {
+      setCurrentVideo(video);
+      setVideoFormData({
+        videoId: video.videoId,
+        title: video.title,
+        isFeatured: video.isFeatured || false
+      });
+    } else {
+      setCurrentVideo(null);
+      setVideoFormData({ videoId: "", title: "", isFeatured: false });
+    }
+    setView('video-form');
+  };
+
+  const handleVideoSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitLoading(true);
+    try {
+      // Si marquem aquest com destacat, treurem el destacat de la resta
+      if (videoFormData.isFeatured) {
+        const others = videosList.filter(v => v.isFeatured && v.id !== (currentVideo?.id));
+        for (const v of others) {
+          await updateVideo(v.id, { isFeatured: false });
+        }
+      }
+
+      if (currentVideo) {
+        await updateVideo(currentVideo.id, videoFormData);
+      } else {
+        await createVideo(videoFormData);
+      }
+      await loadVideos();
+      setView('videos');
+    } catch (err) {
+      alert("Error al guardar el vídeo.");
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  const handleDeleteVideo = async (id) => {
+    if (confirm("Vols esborrar aquest vídeo?")) {
+      await deleteVideo(id);
+      await loadVideos();
     }
   };
 
@@ -255,11 +286,17 @@ export default function Dashboard() {
           <div className="card" onClick={() => setView('list')} style={{ cursor: 'pointer', textAlign: 'center', padding: '3rem' }}>
             <span style={{ fontSize: '3rem' }}>📚</span>
             <h2 style={{ marginTop: '1rem' }}>Gestionar Articles</h2>
-            <p style={{ color: 'rgba(0,0,0,0.6)' }}>Edita o esborra les teves publicacions ({posts.length}).</p>
+            <p style={{ color: 'rgba(0,0,0,0.6)' }}>Edita o esborra publicacions ({posts.length}).</p>
+          </div>
+          <div className="card" onClick={() => setView('videos')} style={{ cursor: 'pointer', textAlign: 'center', padding: '3rem' }}>
+            <span style={{ fontSize: '3rem' }}>📺</span>
+            <h2 style={{ marginTop: '1rem' }}>Gestionar Vídeos</h2>
+            <p style={{ color: 'rgba(0,0,0,0.6)' }}>Configura els vídeos de YouTube ({videosList.length}).</p>
           </div>
         </div>
       )}
 
+      {/* VISTA LLISTA ARTICLES */}
       {view === 'list' && (
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -286,7 +323,6 @@ export default function Dashboard() {
                     </td>
                   </tr>
                 ))}
-                {posts.length === 0 && <tr><td colSpan="3" style={{ padding: '2rem', textAlign: 'center' }}>No hi ha cap article encara.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -294,66 +330,96 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* VISTA FORMULARI ARTICLE */}
       {view === 'form' && (
         <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <h2>{currentPost ? 'Editar Article' : 'Nou Article'}</h2>
             {!currentPost && (
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input 
-                  type="file" 
-                  ref={docInputRef} 
-                  style={{ display: 'none' }} 
-                  accept=".docx,.pdf" 
-                  onChange={handleDocumentUpload} 
-                />
-                <button 
-                  type="button" 
-                  className="btn" 
-                  style={{ background: 'var(--primary-dark)', padding: '0.5rem 1rem', fontSize: '0.8rem' }}
-                  onClick={() => docInputRef.current.click()}
-                  disabled={isExtracting}
-                >
-                  {isExtracting ? 'Processant...' : '📄 Importar Word/PDF'}
-                </button>
+                <input type="file" ref={docInputRef} style={{ display: 'none' }} accept=".docx,.pdf" onChange={handleDocumentUpload} />
+                <button type="button" className="btn" style={{ background: 'var(--primary-dark)', padding: '0.5rem 1rem' }} onClick={() => docInputRef.current.click()} disabled={isExtracting}>{isExtracting ? 'Processant...' : '📄 Importar Word/PDF'}</button>
               </div>
             )}
           </div>
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1.5rem' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontWeight: 600 }}>Títol:</label>
-              <input type="text" value={formData.title} onChange={e => {
-                const val = e.target.value;
-                setFormData({...formData, title: val, slug: generateSlug(val)});
-              }} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <input type="text" placeholder="Títol del Post" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value, slug: generateSlug(e.target.value)})} required className="input" style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
+            <textarea placeholder="Resum (20 paraules)" value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', minHeight: '80px' }} />
+            <div>
+              <label style={{ fontSize: '0.85rem', marginBottom: '0.5rem', display: 'block' }}>Imatge de portada:</label>
+              <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontWeight: 600 }}>Slug (URL):</label>
-              <input type="text" value={formData.slug} onChange={e => setFormData({...formData, slug: e.target.value})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontWeight: 600 }}>Extracte (Resum - 20 primeres paraules):</label>
-              <textarea value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', minHeight: '80px' }} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontWeight: 600 }}>Foto de portada:</label>
-              {formData.imageUrl && <img src={formData.imageUrl} style={{ width: '100px', height: '60px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }} alt="Preview" />}
-              <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} style={{ fontSize: '0.9rem' }} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontWeight: 600 }}>Contingut (Markdown):</label>
-              <textarea value={formData.content} onChange={e => {
-                const text = e.target.value;
-                setFormData({...formData, content: text, excerpt: generateExcerpt(text)});
-              }} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', minHeight: '300px', fontFamily: 'monospace' }} placeholder="# Títol h1\n\nText amb **negreta** i [enllaços](...)" />
-            </div>
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <button type="submit" className="btn" disabled={submitLoading || isExtracting} style={{ flex: 1 }}>{submitLoading ? 'Guardant...' : 'Publicar Article'}</button>
-              <button type="button" className="btn" style={{ background: 'var(--gray-200)', color: 'black' }} onClick={() => setView('list')}>Cancel·lar</button>
+            <textarea placeholder="Contingut en Markdown..." value={formData.content} onChange={e => setFormData({...formData, content: e.target.value, excerpt: generateExcerpt(e.target.value)})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', minHeight: '300px', fontFamily: 'monospace' }} />
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>{submitLoading ? 'Sincronitzant...' : 'Publicar'}</button>
+              <button type="button" className="btn" onClick={() => setView('list')} style={{ background: 'var(--gray-200)', color: 'black' }}>Cancel·lar</button>
             </div>
           </form>
         </div>
+      )}
+
+      {/* VISTA LLISTA VÍDEOS */}
+      {view === 'videos' && (
+        <div className="card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h2>Vídeos de YouTube</h2>
+            <button className="btn" onClick={() => openVideoForm()}>+ Afegir Vídeo</button>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--gray-200)', textAlign: 'left' }}>
+                  <th style={{ padding: '1rem' }}>Títol</th>
+                  <th style={{ padding: '1rem' }}>Destacat?</th>
+                  <th style={{ padding: '1rem' }}>Accions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {videosList.map(v => (
+                  <tr key={v.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+                    <td style={{ padding: '1rem' }}>{v.title}</td>
+                    <td style={{ padding: '1rem' }}>{v.isFeatured ? '✅ Sí' : 'No'}</td>
+                    <td style={{ padding: '1rem', display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => openVideoForm(v)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✏️</button>
+                      <button onClick={() => handleDeleteVideo(v.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>🗑️</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <button className="btn" style={{ background: 'var(--foreground)', marginTop: '1.5rem' }} onClick={() => setView('menu')}>Tornar</button>
+        </div>
+      )}
+
+      {/* VISTA FORMULARI VÍDEO */}
+      {view === 'video-form' && (
+        <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <h2>{currentVideo ? 'Editar Vídeo' : 'Afegir Vídeo'}</h2>
+          <form onSubmit={handleVideoSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1.5rem' }}>
+            <div>
+              <label style={{ fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>ID del vídeo (ex: s4ycv5hkAPk):</label>
+              <input type="text" value={videoFormData.videoId} onChange={e => setVideoFormData({...videoFormData, videoId: e.target.value})} required style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
+            </div>
+            <div>
+              <label style={{ fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>Títol del vídeo:</label>
+              <input type="text" value={videoFormData.title} onChange={e => setVideoFormData({...videoFormData, title: e.target.value})} required style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input type="checkbox" id="isFeatured" checked={videoFormData.isFeatured} onChange={e => setVideoFormData({...videoFormData, isFeatured: e.target.checked})} />
+              <label htmlFor="isFeatured">Vídeo Destacat (apareixerà al Home)</label>
+            </div>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>{submitLoading ? 'Guardant...' : 'Desar'}</button>
+              <button type="button" className="btn" style={{ background: 'var(--gray-200)', color: 'black' }} onClick={() => setView('videos')}>Cancel·lar</button>
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
+  </div>
       )}
     </div>
   );

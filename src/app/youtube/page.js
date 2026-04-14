@@ -1,17 +1,24 @@
 import Link from "next/link";
+import { getAllVideos } from "@/lib/firebase/videos";
+import YouTubePlayer from "@/components/YouTubePlayer";
 
 export const metadata = {
   title: "Canal de YouTube - Més enllà d'Orió",
   description: "Explora tots els vídeos del nostre canal de YouTube sobre tecnologia, estafes i curiositats.",
 };
 
-export default function YouTubePage() {
-  const videos = [
-    { id: "s4ycv5hkAPk", title: "Benvinguts al canal: Més enllà d'Orió", thumbnail: "https://img.youtube.com/vi/s4ycv5hkAPk/maxresdefault.jpg" },
-    { id: "1", title: "La gran estafa de les Crypto: Com van robar milions", thumbnail: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800&q=80" },
-    { id: "2", title: "Gadgets inútils que la gent segueix comprant", thumbnail: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=800&q=80" },
-    { id: "3", title: "El misteri d'Internet que ningú ha resolt", thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80" },
+export default async function YouTubePage() {
+  const videos = await getAllVideos();
+
+  // Dades per defecte si Firestore està buit
+  const defaultVideos = [
+    { videoId: "s4ycv5hkAPk", title: "Benvinguts al canal: Més enllà d'Orió" },
+    { videoId: "1", title: "La gran estafa de les Crypto: Com van robar milions" },
+    { videoId: "2", title: "Gadgets inútils que la gent segueix comprant" },
+    { videoId: "3", title: "El misteri d'Internet que ningú ha resolt" },
   ];
+
+  const displayVideos = videos.length > 0 ? videos : defaultVideos;
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
@@ -34,33 +41,22 @@ export default function YouTubePage() {
         </a>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2.5rem' }}>
-        {videos.map(video => (
-          <div key={video.id} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-            <a 
-              href={`https://youtube.com/watch?v=${video.id}`} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              style={{ display: 'block', position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}
-            >
-              <img 
-                src={video.thumbnail} 
-                alt={video.title} 
-                style={{ objectFit: 'cover', width: '100%', height: '100%', transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }} 
-                className="zoom-on-hover" 
-              />
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(255,0,0,0.9)', borderRadius: '50%', width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.9 }}>
-                 <svg style={{ width: 30, height: 30, fill: 'white', marginLeft: '4px' }} viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-              </div>
-            </a>
-            <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'white' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem', lineHeight: 1.4, color: 'var(--foreground)' }}>{video.title}</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '2.5rem' }}>
+        {displayVideos.map(video => (
+          <div key={video.id || video.videoId} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
+            <YouTubePlayer 
+              videoId={video.videoId} 
+              title={video.title} 
+              isFeatured={false}
+            />
+            <div style={{ padding: '1.5rem', background: 'white' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.2rem', lineHeight: 1.4 }}>{video.title}</h3>
               <a 
-                href={`https://youtube.com/watch?v=${video.id}`} 
+                href={`https://youtube.com/watch?v=${video.videoId}`} 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="btn" 
-                style={{ textAlign: 'center', background: '#f1f1f1', color: 'var(--primary-dark)', width: '100%', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600 }}
+                style={{ textAlign: 'center', background: '#f1f1f1', color: 'var(--primary-dark)', width: '100%', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600 }}
               >
                 Veure a YouTube
               </a>
@@ -68,12 +64,6 @@ export default function YouTubePage() {
           </div>
         ))}
       </div>
-
-      <style dangerouslySetInnerHTML={{__html: `
-        .zoom-on-hover:hover {
-           transform: scale(1.08);
-        }
-      `}} />
     </div>
   );
 }
