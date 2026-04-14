@@ -47,9 +47,11 @@ export default function Dashboard() {
   // Vídeos
   const [videosList, setVideosList] = useState([]);
   const [currentVideo, setCurrentVideo] = useState(null);
+  const [videoThumbnailFile, setVideoThumbnailFile] = useState(null);
   const [videoFormData, setVideoFormData] = useState({
     videoId: "",
     title: "",
+    customThumbnailUrl: "",
     isFeatured: false
   });
 
@@ -147,11 +149,17 @@ export default function Dashboard() {
   const openVideoForm = (video = null) => {
     if (video) {
       setCurrentVideo(video);
-      setVideoFormData({ videoId: video.videoId, title: video.title, isFeatured: video.isFeatured || false });
+      setVideoFormData({ 
+        videoId: video.videoId, 
+        title: video.title, 
+        customThumbnailUrl: video.customThumbnailUrl || "",
+        isFeatured: video.isFeatured || false 
+      });
     } else {
       setCurrentVideo(null);
-      setVideoFormData({ videoId: "", title: "", isFeatured: false });
+      setVideoFormData({ videoId: "", title: "", customThumbnailUrl: "", isFeatured: false });
     }
+    setVideoThumbnailFile(null);
     setView('video-form');
   };
 
@@ -159,16 +167,32 @@ export default function Dashboard() {
     e.preventDefault();
     setSubmitLoading(true);
     try {
-      if (videoFormData.isFeatured) {
+      let finalThumbUrl = videoFormData.customThumbnailUrl;
+      if (videoThumbnailFile) {
+        finalThumbUrl = await uploadImage(videoThumbnailFile);
+      }
+
+      const payload = { ...videoFormData, customThumbnailUrl: finalThumbUrl };
+
+      if (payload.isFeatured) {
         const others = videosList.filter(v => v.isFeatured && v.id !== (currentVideo?.id));
         for (const v of others) await updateVideo(v.id, { isFeatured: false });
       }
-      if (currentVideo) await updateVideo(currentVideo.id, videoFormData);
-      else await createVideo(videoFormData);
+
+      if (currentVideo) await updateVideo(currentVideo.id, payload);
+      else await createVideo(payload);
+      
       await loadVideos();
       setView('videos');
     } catch (err) { alert("Error al guardar vídeo."); }
     finally { setSubmitLoading(false); }
+  };
+
+  const handleDeleteVideo = async (id) => {
+    if (confirm("Vols esborrar aquest vídeo?")) {
+      await deleteVideo(id);
+      await loadVideos();
+    }
   };
 
   // --- PÀGINES ---
@@ -335,14 +359,21 @@ export default function Dashboard() {
       {/* VIDEOS LIST */}
       {view === 'videos' && (
         <div className="card">
-          <h2>Vídeos</h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h2>Vídeos</h2>
+            <button className="btn" onClick={() => openVideoForm()}>+ Afegir Vídeo</button>
+          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
             <tbody>
               {videosList.map(v => (
                 <tr key={v.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
-                  <td style={{ padding: '0.8rem' }}>{v.title}</td>
+                  <td style={{ padding: '0.8rem' }}>
+                    {v.title}
+                    {v.customThumbnailUrl && <span style={{fontSize: '0.7rem', color: 'var(--primary-blue)', marginLeft: '10px'}}>(Amb foto pròpia)</span>}
+                  </td>
                   <td style={{ textAlign: 'right' }}>
-                    <button onClick={() => openVideoForm(v)} style={{ background: 'none' }}>✏️</button>
+                    <button onClick={() => openVideoForm(v)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✏️</button>
+                    <button onClick={() => handleDeleteVideo(v.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>🗑️</button>
                   </td>
                 </tr>
               ))}
@@ -355,15 +386,31 @@ export default function Dashboard() {
       {/* VIDEO FORM */}
       {view === 'video-form' && (
         <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <h2>Editar Vídeo</h2>
+          <h2>{currentVideo ? 'Editar Vídeo' : 'Nou Vídeo'}</h2>
           <form onSubmit={handleVideoSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginTop: '1.5rem' }}>
-            <input type="text" value={videoFormData.videoId} onChange={e => setVideoFormData({...videoFormData, videoId: e.target.value})} />
-            <input type="text" value={videoFormData.title} onChange={e => setVideoFormData({...videoFormData, title: e.target.value})} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input type="checkbox" checked={videoFormData.isFeatured} onChange={e => setVideoFormData({...videoFormData, isFeatured: e.target.checked})} />
-              <label>Vídeo Destacat</label>
+            <div>
+              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>ID de YouTube (ex: s4ycv5hkAPk):</label>
+              <input type="text" value={videoFormData.videoId} onChange={e => setVideoFormData({...videoFormData, videoId: e.target.value})} required style={{width: '100%', padding: '0.8rem'}} />
             </div>
-            <button type="submit" className="btn">Desar</button>
+            <div>
+              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>Títol del Vídeo:</label>
+              <input type="text" value={videoFormData.title} onChange={e => setVideoFormData({...videoFormData, title: e.target.value})} required style={{width: '100%', padding: '0.8rem'}} />
+            </div>
+            <div>
+              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>Foto personalitzada (opcional):</label>
+              <input type="file" accept="image/*" onChange={e => setVideoThumbnailFile(e.target.files[0])} />
+              {videoFormData.customThumbnailUrl && !videoThumbnailFile && (
+                <p style={{fontSize: '0.8rem', color: 'green', marginTop: '0.5rem'}}>Ja té una foto pujada.</p>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input type="checkbox" id="vFeatured" checked={videoFormData.isFeatured} onChange={e => setVideoFormData({...videoFormData, isFeatured: e.target.checked})} />
+              <label htmlFor="vFeatured">Vídeo Destacat</label>
+            </div>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>{submitLoading ? 'Sincronitzant...' : 'Desar'}</button>
+              <button type="button" className="btn" onClick={() => setView('videos')} style={{ background: 'var(--gray-200)', color: 'black' }}>Cancel·lar</button>
+            </div>
           </form>
         </div>
       )}

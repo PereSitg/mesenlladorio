@@ -66,6 +66,7 @@ export default async function Home() {
           videoId={mainVideo.videoId} 
           title={mainVideo.title} 
           isFeatured={true} 
+          customThumbnailUrl={mainVideo.customThumbnailUrl}
         />
       </section>
 
@@ -84,7 +85,7 @@ export default async function Home() {
             <div key={video.id || video.videoId} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
               <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
                 <img 
-                  src={`https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`} 
+                  src={video.customThumbnailUrl || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`} 
                   alt={video.title} 
                   style={{ objectFit: 'cover', width: '100%', height: '100%', transition: 'transform 0.6s' }} 
                   className="zoom-on-hover" 

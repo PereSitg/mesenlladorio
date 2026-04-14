@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 
-export default function YouTubePlayer({ videoId, title, isFeatured = false }) {
+export default function YouTubePlayer({ videoId, title, isFeatured = false, customThumbnailUrl = null }) {
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Generem la URL de la miniatura de YouTube en alta qualitat
-  const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+  // Si tenim una miniatura personalitzada, la fem servir. 
+  // Si no, fem servir la de YouTube per defecte
+  const thumbnailUrl = customThumbnailUrl || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
 
   if (isPlaying) {

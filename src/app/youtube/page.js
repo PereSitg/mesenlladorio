@@ -48,6 +48,7 @@ export default async function YouTubePage() {
               videoId={video.videoId} 
               title={video.title} 
               isFeatured={false}
+              customThumbnailUrl={video.customThumbnailUrl}
             />
             <div style={{ padding: '1.5rem', background: 'white' }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.2rem', lineHeight: 1.4 }}>{video.title}</h3>
