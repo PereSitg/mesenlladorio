@@ -108,6 +108,13 @@ export default function Dashboard() {
     setView('menu');
   };
 
+  const withTimeout = (promise, ms = 20000) => {
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Temps d'espera esgotat (20s). El servidor no respon.")), ms)
+    );
+    return Promise.race([promise, timeout]);
+  };
+
   const generateSlug = (title) => {
     return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
   };
@@ -136,13 +143,13 @@ export default function Dashboard() {
     if (!articleImageFile) return;
     setUploadingArticle(true);
     try {
-      const url = await uploadToCloudinary(articleImageFile);
+      const url = await withTimeout(uploadToCloudinary(articleImageFile));
       if (url) {
         setFormData(prev => ({ ...prev, imageUrl: url }));
         setArticleImageFile(null);
         alert("Imatge pujada a Cloudinary! 📷");
       }
-    } catch (err) { alert("Error al pujar la imatge."); }
+    } catch (err) { alert(err.message || "Error al pujar la imatge."); }
     finally { setUploadingArticle(false); }
   };
 
@@ -168,6 +175,7 @@ export default function Dashboard() {
         const titleMatch = text.trim().split("\n")[0];
         setFormData(prev => ({ ...prev, content: text, title: prev.title || titleMatch || "" }));
       }
+      setView('form'); // Obrim el formulari automàticament amb el contingut extret
     } catch (err) { 
       console.error(err);
       alert("Error al llegir el document."); 
@@ -184,12 +192,15 @@ export default function Dashboard() {
         ...formData, 
         createdAt: currentPost ? currentPost.createdAt : new Date().toISOString() 
       };
-      if (currentPost) await updatePost(currentPost.id, postPayload);
-      else await createPost(postPayload);
-      await loadPosts();
+      const process = async () => {
+        if (currentPost) await updatePost(currentPost.id, postPayload);
+        else await createPost(postPayload);
+        await loadPosts();
+      };
+      await withTimeout(process());
       setView('list');
       alert("Article guardat correctament! ✨");
-    } catch (err) { alert("Error al guardar l'article."); }
+    } catch (err) { alert(err.message || "Error al guardar l'article."); }
     finally { setSubmitLoading(false); }
   };
 
@@ -220,13 +231,13 @@ export default function Dashboard() {
     if (!videoImageFile) return;
     setUploadingVideo(true);
     try {
-      const url = await uploadToCloudinary(videoImageFile);
+      const url = await withTimeout(uploadToCloudinary(videoImageFile));
       if (url) {
         setVideoFormData(prev => ({ ...prev, customThumbnailUrl: url }));
         setVideoImageFile(null);
         alert("Imatge pujada a Cloudinary! 📷");
       }
-    } catch (err) { alert("Error al pujar la imatge."); }
+    } catch (err) { alert(err.message || "Error al pujar la imatge."); }
     finally { setUploadingVideo(false); }
   };
 
@@ -243,18 +254,20 @@ export default function Dashboard() {
         showOnHome: !!videoFormData.showOnHome
       };
 
-      if (payload.isFeatured) {
-        const others = videosList.filter(v => v.isFeatured && v.id !== currentVideo?.id);
-        await Promise.all(others.map(v => updateVideo(v.id, { isFeatured: false })));
-      }
+      const process = async () => {
+        if (payload.isFeatured) {
+          const others = videosList.filter(v => v.isFeatured && v.id !== currentVideo?.id);
+          await Promise.all(others.map(v => updateVideo(v.id, { isFeatured: false })));
+        }
+        if (currentVideo) await updateVideo(currentVideo.id, payload);
+        else await createVideo(payload);
+        await loadVideos();
+      };
 
-      if (currentVideo) await updateVideo(currentVideo.id, payload);
-      else await createVideo(payload);
-      
-      await loadVideos();
+      await withTimeout(process());
       setView('videos');
       alert("Vídeo/Anunci guardat correctament! ✨");
-    } catch (err) { alert("Error al guardar el vídeo."); }
+    } catch (err) { alert(err.message || "Error al guardar el vídeo."); }
     finally { setSubmitLoading(false); }
   };
 
@@ -288,13 +301,13 @@ export default function Dashboard() {
     if (!pageImageFile) return;
     setUploadingPage(true);
     try {
-      const url = await uploadToCloudinary(pageImageFile);
+      const url = await withTimeout(uploadToCloudinary(pageImageFile));
       if (url) {
         setPageFormData(prev => ({ ...prev, imageUrl: url }));
         setPageImageFile(null);
         alert("Imatge pujada a Cloudinary! 📷");
       }
-    } catch (err) { alert("Error al pujar la imatge."); }
+    } catch (err) { alert(err.message || "Error al pujar la imatge."); }
     finally { setUploadingPage(false); }
   };
 
@@ -303,12 +316,15 @@ export default function Dashboard() {
     if (submitLoading) return;
     setSubmitLoading(true);
     try {
-      if (currentPage) await updatePage(currentPage.id, pageFormData);
-      else await createPage(pageFormData);
-      await loadPages();
+      const process = async () => {
+        if (currentPage) await updatePage(currentPage.id, pageFormData);
+        else await createPage(pageFormData);
+        await loadPages();
+      };
+      await withTimeout(process());
       setView('pages');
       alert("Pàgina guardada correctament! ✨");
-    } catch (err) { alert("Error al guardar la pàgina."); }
+    } catch (err) { alert(err.message || "Error al guardar la pàgina."); }
     finally { setSubmitLoading(false); }
   };
 
@@ -364,7 +380,14 @@ export default function Dashboard() {
       {/* ARTICLES LIST */}
       {view === 'list' && (
         <div className="card">
-          <h2>Articles Publicats</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h2>Articles Publicats</h2>
+            <div style={{ padding: '1rem', background: 'var(--primary-light)', borderRadius: '12px', border: '1px solid var(--primary-blue)' }}>
+               <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem' }}>📂 Importar des de PDF/DOC:</label>
+               <input type="file" accept=".pdf,.doc,.docx" onChange={handleDocUpload} style={{ fontSize: '0.8rem' }} />
+               {isExtracting && <p style={{ color: 'var(--primary-blue)', fontSize: '0.75rem', marginTop: '0.3rem' }}>Llegint dades...</p>}
+            </div>
+          </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
             <tbody>
               {posts.map(post => (
@@ -385,19 +408,12 @@ export default function Dashboard() {
       {/* ARTICLE FORM */}
       {view === 'form' && (
         <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h2>{currentPost ? 'Editar Article' : 'Nou Article'}</h2>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginTop: '1.5rem' }}>
-            <div style={{ padding: '1.5rem', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1', marginBottom: '1rem' }}>
-              <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.8rem', color: 'var(--primary-dark)' }}>📚 Puja Document (PDF/DOC) per omplir títol i contingut:</label>
-              <input 
-                type="file" 
-                accept=".pdf,.doc,.docx" 
-                onChange={handleDocUpload} 
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '6px' }} 
-              />
-              {isExtracting && <p style={{ color: 'var(--primary-blue)', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: 600 }}>Extraient dades del document...</p>}
-            </div>
-
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid var(--primary-blue)', paddingBottom: '0.5rem' }}>
+             <h2 style={{ margin: 0 }}>{currentPost ? 'Editar Article' : 'Nou Article'}</h2>
+             <span style={{ fontSize: '0.9rem', color: 'var(--gray-500)' }}>Pas 2: Detalls i Fotos</span>
+          </header>
+          
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
             <input type="text" placeholder="Títol" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value, slug: generateSlug(e.target.value)})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>
@@ -425,7 +441,7 @@ export default function Dashboard() {
             
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>
-                {submitLoading ? 'Sincronitzant...' : 'Desar'}
+                {submitLoading ? 'S' + 'incronitzant...' : 'Desar finalment'}
               </button>
               <button type="button" className="btn" onClick={() => setView('list')} style={{ background: 'var(--gray-200)', color: 'black' }}>Cancel·lar</button>
             </div>
