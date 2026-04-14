@@ -40,6 +40,8 @@ export default function Dashboard() {
     excerpt: "",
     content: "",
     imageUrl: "",
+    imageTitle: "",
+    imageAlt: "",
     isIndexed: true
   });
   const [articleImageFile, setArticleImageFile] = useState(null);
@@ -129,11 +131,13 @@ export default function Dashboard() {
         excerpt: post.excerpt,
         content: post.content,
         imageUrl: post.imageUrl,
+        imageTitle: post.imageTitle || "",
+        imageAlt: post.imageAlt || "",
         isIndexed: post.isIndexed !== undefined ? post.isIndexed : true
       });
     } else {
       setCurrentPost(null);
-      setFormData({ title: "", slug: "", excerpt: "", content: "", imageUrl: "", isIndexed: true });
+      setFormData({ title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageTitle: "", imageAlt: "", isIndexed: true });
     }
     setArticleImageFile(null);
     setView('form');
@@ -438,9 +442,15 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-              <label style={{ fontWeight: 600 }}>🔗 URL de la Imatge (s'omple sola en pujar):</label>
-              <input type="text" placeholder="https://..." value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', flex: 1, minWidth: '200px' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>🏷️ Títol de la Imatge (Title):</label>
+                <input type="text" placeholder="El nom de la imatge" value={formData.imageTitle} onChange={e => setFormData({...formData, imageTitle: e.target.value})} style={{ padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', flex: 1, minWidth: '200px' }}>
+                <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>🔍 Text Alternatiu (Alt Text):</label>
+                <input type="text" placeholder="Descripció per a SEO" value={formData.imageAlt} onChange={e => setFormData({...formData, imageAlt: e.target.value})} style={{ padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
+              </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
