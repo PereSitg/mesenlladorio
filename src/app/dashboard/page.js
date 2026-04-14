@@ -167,27 +167,48 @@ export default function Dashboard() {
 
   const handleVideoSubmit = async (e) => {
     e.preventDefault();
+    if (submitLoading) return;
+    
     setSubmitLoading(true);
     try {
       let finalThumbUrl = videoFormData.customThumbnailUrl;
+      
+      // 1. Pujar la imatge si n'hi ha una de nova
       if (videoThumbnailFile) {
-        finalThumbUrl = await uploadImage(videoThumbnailFile);
+        console.log("Pujant miniatura...");
+        finalThumbUrl = await uploadImage(videoThumbnailFile, "videos-thumbs");
       }
 
-      const payload = { ...videoFormData, customThumbnailUrl: finalThumbUrl };
+      const payload = { 
+        videoId: videoFormData.videoId.trim(), 
+        title: videoFormData.title.trim(), 
+        customThumbnailUrl: finalThumbUrl,
+        isFeatured: videoFormData.isFeatured,
+        showOnHome: videoFormData.showOnHome
+      };
 
+      // 2. Gestionar el vídeo destacat (només pot haver-hi un)
       if (payload.isFeatured) {
-        const others = videosList.filter(v => v.isFeatured && v.id !== (currentVideo?.id));
-        for (const v of others) await updateVideo(v.id, { isFeatured: false });
+        const others = videosList.filter(v => v.isFeatured && v.id !== currentVideo?.id);
+        await Promise.all(others.map(v => updateVideo(v.id, { isFeatured: false })));
       }
 
-      if (currentVideo) await updateVideo(currentVideo.id, payload);
-      else await createVideo(payload);
+      // 3. Guardar a Firestore
+      if (currentVideo) {
+        await updateVideo(currentVideo.id, payload);
+      } else {
+        await createVideo(payload);
+      }
       
       await loadVideos();
       setView('videos');
-    } catch (err) { alert("Error al guardar vídeo."); }
-    finally { setSubmitLoading(false); }
+      alert("Vídeo/Anunci guardat correctament! ✨");
+    } catch (err) {
+      console.error("Error al handleVideoSubmit:", err);
+      alert("S'ha produït un error al guardar: " + (err.message || "Error desconegut"));
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
   const handleDeleteVideo = async (id) => {
