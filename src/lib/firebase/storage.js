@@ -11,19 +11,19 @@ export const uploadImage = async (file, folder = "posts") => {
   if (!file) return null;
 
   try {
-    // Creem un nom únic per al fitxer per evitar duplicats
     const fileName = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
     const storageRef = ref(storage, `${folder}/${fileName}`);
     
-    // Pugem els bytes
+    // Pugem els bytes i esperem el resultat
     const snapshot = await uploadBytes(storageRef, file);
     
-    // Obtenim la URL definitiva per guardar-la a la base de dades
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    
-    return downloadURL;
+    // Retornem la URL de descàrrega
+    return await getDownloadURL(snapshot.ref);
   } catch (error) {
-    console.error("Error uploading image:", error);
+    console.error("Error a uploadImage:", error);
+    if (error.code === 'storage/unauthorized') {
+      throw new Error("No tens permisos de Firebase Storage per pujar imatges.");
+    }
     throw error;
   }
 };
