@@ -42,12 +42,10 @@ export default function Dashboard() {
     imageUrl: "",
     isIndexed: true
   });
-  const [imageFile, setImageFile] = useState(null);
 
   // Vídeos
   const [videosList, setVideosList] = useState([]);
   const [currentVideo, setCurrentVideo] = useState(null);
-  const [videoThumbnailFile, setVideoThumbnailFile] = useState(null);
   const [videoFormData, setVideoFormData] = useState({
     videoId: "",
     title: "",
@@ -160,37 +158,18 @@ export default function Dashboard() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (submitLoading) return;
-    
     setSubmitLoading(true);
-    const timeout = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Temps d'espera esgotat (20s). La connexió és lenta.")), 20000)
-    );
-
     try {
-      const process = (async () => {
-        let finalImageUrl = formData.imageUrl;
-        if (imageFile) finalImageUrl = await uploadImage(imageFile, "posts");
-        
-        const postPayload = { 
-          ...formData, 
-          imageUrl: finalImageUrl || "", 
-          createdAt: currentPost ? currentPost.createdAt : new Date().toISOString() 
-        };
-        
-        if (currentPost) await updatePost(currentPost.id, postPayload);
-        else await createPost(postPayload);
-        
-        await loadPosts();
-        return true;
-      })();
-
-      await Promise.race([process, timeout]);
+      const postPayload = { 
+        ...formData, 
+        createdAt: currentPost ? currentPost.createdAt : new Date().toISOString() 
+      };
+      if (currentPost) await updatePost(currentPost.id, postPayload);
+      else await createPost(postPayload);
+      await loadPosts();
       setView('list');
       alert("Article guardat correctament! ✨");
-    } catch (err) { 
-      console.error(err);
-      alert("Error al guardar l'article: " + (err.message || "Error desconegut")); 
-    }
+    } catch (err) { alert("Error al guardar l'article."); }
     finally { setSubmitLoading(false); }
   };
 
@@ -213,62 +192,35 @@ export default function Dashboard() {
       setCurrentVideo(null);
       setVideoFormData({ videoId: "", title: "", customThumbnailUrl: "", isFeatured: false, showOnHome: false });
     }
-    setVideoThumbnailFile(null);
     setView('video-form');
   };
 
   const handleVideoSubmit = async (e) => {
     e.preventDefault();
     if (submitLoading) return;
-    
     setSubmitLoading(true);
-    
-    // Creem una promesa de timeout per no quedar-nos penjats
-    const timeout = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Temps d'espera esgotat (20s). La connexió és massa lenta o Firebase no respon.")), 20000)
-    );
-
     try {
-      const process = (async () => {
-        let finalThumbUrl = videoFormData.customThumbnailUrl;
-        
-        if (videoThumbnailFile) {
-          finalThumbUrl = await uploadImage(videoThumbnailFile, "videos-thumbs");
-        }
+      const payload = { 
+        videoId: videoFormData.videoId ? videoFormData.videoId.trim() : "", 
+        title: videoFormData.title ? videoFormData.title.trim() : "", 
+        customThumbnailUrl: videoFormData.customThumbnailUrl ? videoFormData.customThumbnailUrl.trim() : "",
+        isFeatured: !!videoFormData.isFeatured,
+        showOnHome: !!videoFormData.showOnHome
+      };
 
-        const payload = { 
-          videoId: videoFormData.videoId ? videoFormData.videoId.trim() : "", 
-          title: videoFormData.title ? videoFormData.title.trim() : "", 
-          customThumbnailUrl: finalThumbUrl || "",
-          isFeatured: !!videoFormData.isFeatured,
-          showOnHome: !!videoFormData.showOnHome
-        };
+      if (payload.isFeatured) {
+        const others = videosList.filter(v => v.isFeatured && v.id !== currentVideo?.id);
+        await Promise.all(others.map(v => updateVideo(v.id, { isFeatured: false })));
+      }
 
-        if (payload.isFeatured) {
-          const others = videosList.filter(v => v.isFeatured && v.id !== currentVideo?.id);
-          await Promise.all(others.map(v => updateVideo(v.id, { isFeatured: false })));
-        }
-
-        if (currentVideo) {
-          await updateVideo(currentVideo.id, payload);
-        } else {
-          await createVideo(payload);
-        }
-        
-        await loadVideos();
-        return true;
-      })();
-
-      await Promise.race([process, timeout]);
+      if (currentVideo) await updateVideo(currentVideo.id, payload);
+      else await createVideo(payload);
       
+      await loadVideos();
       setView('videos');
       alert("Vídeo/Anunci guardat correctament! ✨");
-    } catch (err) {
-      console.error("Error al handleVideoSubmit:", err);
-      alert("Error: " + (err.message || "No s'ha pogut guardar. Revisa la teva connexió."));
-    } finally {
-      setSubmitLoading(false);
-    }
+    } catch (err) { alert("Error al guardar el vídeo."); }
+    finally { setSubmitLoading(false); }
   };
 
   const handleDeleteVideo = async (id) => {
@@ -298,27 +250,14 @@ export default function Dashboard() {
   const handlePageSubmit = async (e) => {
     e.preventDefault();
     if (submitLoading) return;
-    
     setSubmitLoading(true);
-    const timeout = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Temps d'espera esgotat (20s).")), 20000)
-    );
-
     try {
-      const process = (async () => {
-        if (currentPage) await updatePage(currentPage.id, pageFormData);
-        else await createPage(pageFormData);
-        await loadPages();
-        return true;
-      })();
-
-      await Promise.race([process, timeout]);
+      if (currentPage) await updatePage(currentPage.id, pageFormData);
+      else await createPage(pageFormData);
+      await loadPages();
       setView('pages');
       alert("Pàgina guardada correctament! ✨");
-    } catch (err) { 
-      console.error(err);
-      alert("Error al guardar pàgina: " + (err.message || "Error desconegut")); 
-    }
+    } catch (err) { alert("Error al guardar la pàgina."); }
     finally { setSubmitLoading(false); }
   };
 
@@ -409,17 +348,18 @@ export default function Dashboard() {
             </div>
 
             <input type="text" placeholder="Títol" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value, slug: generateSlug(e.target.value)})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+              <label style={{ fontWeight: 600 }}>🔗 URL de la Imatge (de l'altre programa):</label>
+              <input type="text" placeholder="https://..." value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
+            </div>
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <input type="checkbox" id="isIndexedPost" checked={formData.isIndexed} onChange={e => setFormData({...formData, isIndexed: e.target.checked})} />
               <label htmlFor="isIndexedPost">Indexar a Google</label>
             </div>
             <textarea placeholder="Resum" value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} style={{ padding: '0.8rem', minHeight: '80px', borderRadius: '8px' }} />
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontWeight: 600 }}>Foto de l'article:</label>
-              <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} />
-            </div>
-
             <textarea placeholder="Contingut (Markdown)" value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} required style={{ padding: '0.8rem', minHeight: '300px', borderRadius: '8px' }} />
             
             <div style={{ display: 'flex', gap: '1rem' }}>
@@ -460,6 +400,12 @@ export default function Dashboard() {
           <form onSubmit={handlePageSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginTop: '1.5rem' }}>
             <input type="text" placeholder="Títol de la Pàgina" value={pageFormData.title} onChange={e => setPageFormData({...pageFormData, title: e.target.value, slug: generateSlug(e.target.value)})} required style={{ padding: '0.8rem', borderRadius: '8px' }} />
             <input type="text" placeholder="URL-slug" value={pageFormData.slug} onChange={e => setPageFormData({...pageFormData, slug: e.target.value})} required style={{ padding: '0.8rem' }} />
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+              <label style={{ fontWeight: 600 }}>🔗 URL de la Imatge (de l'altre programa):</label>
+              <input type="text" placeholder="https://..." value={pageFormData.imageUrl} onChange={e => setPageFormData({...pageFormData, imageUrl: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
+            </div>
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <input type="checkbox" id="isIndexedPage" checked={pageFormData.isIndexed} onChange={e => setPageFormData({...pageFormData, isIndexed: e.target.checked})} />
               <label htmlFor="isIndexedPage">Indexar a Google</label>
@@ -516,12 +462,8 @@ export default function Dashboard() {
               <input type="text" value={videoFormData.title} onChange={e => setVideoFormData({...videoFormData, title: e.target.value})} required style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)'}} />
             </div>
             <div>
-              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>Foto personalitzada (molt recomanada si és un anunci):</label>
-              <input type="file" accept="image/*" onChange={e => setVideoThumbnailFile(e.target.files[0])} style={{ marginBottom: '0.5rem' }} />
-              {videoThumbnailFile && <p style={{fontSize: '0.8rem', color: 'var(--primary-blue)', margin: '0.2rem 0'}}>Foto seleccionada.</p>}
-              {videoFormData.customThumbnailUrl && !videoThumbnailFile && (
-                <p style={{fontSize: '0.8rem', color: 'green', margin: '0.2rem 0'}}>Ja té una foto pujada.</p>
-              )}
+              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>🔗 URL de la Foto (de l'altre programa):</label>
+              <input type="text" value={videoFormData.customThumbnailUrl} onChange={e => setVideoFormData({...videoFormData, customThumbnailUrl: e.target.value})} placeholder="https://..." style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)'}} />
             </div>
             <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
