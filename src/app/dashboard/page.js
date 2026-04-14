@@ -7,7 +7,7 @@ import { getAllPosts, createPost, updatePost, deletePost } from "@/lib/firebase/
 import { uploadImage } from "@/lib/firebase/storage";
 
 export default function Dashboard() {
-  const AUTHORIZED_EMAIL = "mesenlladorio@gmail.com";
+  const AUTHORIZED_EMAIL = "pbadialorenz@gmail.com";
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
