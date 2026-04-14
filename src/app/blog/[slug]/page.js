@@ -1,6 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 import { getPostBySlug } from '@/lib/firebase/posts';
 import { notFound } from 'next/navigation';
+import ShareButtons from '@/components/ShareButtons';
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -19,6 +20,10 @@ export async function generateMetadata({ params }) {
   return {
     title: `${title} | Més enllà d'Orió`,
     description: description,
+    robots: {
+      index: post.isIndexed !== false,
+      follow: true,
+    },
     openGraph: {
       title: title,
       description: description,
@@ -65,6 +70,11 @@ export default async function BlogPost({ params }) {
       <div className="markdown-content" style={{ fontSize: '1.25rem', lineHeight: 1.8, color: 'rgba(0,0,0,0.85)' }}>
         <ReactMarkdown>{post.content}</ReactMarkdown>
       </div>
+
+      <ShareButtons 
+        title={post.title} 
+        excerpt={post.excerpt} 
+      />
       
       <style dangerouslySetInnerHTML={{__html: `
         .markdown-content h2 { font-size: 2rem; margin-top: 2rem; margin-bottom: 1rem; color: var(--primary-dark); }
