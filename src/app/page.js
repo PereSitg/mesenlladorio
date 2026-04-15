@@ -172,7 +172,7 @@ export default async function Home() {
                   <p style={{ fontSize: '0.95rem', color: 'rgba(0,0,0,0.6)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '1.5rem' }}>
                     {post.excerpt}
                   </p>
-                  <span style={{ marginTop: 'auto', color: 'var(--primary-blue)', fontWeight: 700, fontSize: '0.9rem' }}>Llegir article &rarr;</span>
+                  <span style={{ marginTop: 'auto', color: 'var(--primary-blue)', fontWeight: 700, fontSize: '0.9rem' }}>Llegeix l&apos;article complet &rarr;</span>
                 </div>
               </Link>
             ))}
