@@ -25,6 +25,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const docInputRef = useRef(null);
+  const contentRef = useRef(null);
   const [contentImageSnippet, setContentImageSnippet] = useState("");
   const [uploadingContentImage, setUploadingContentImage] = useState(false);
   
@@ -133,6 +134,35 @@ export default function Dashboard() {
       .replace(/\s+/g, '-')                // Espais per guions
       .replace(/[^\w-]+/g, '')             // Elimina caràcters especials
       .replace(/--+/g, '-');               // Elimina guions dobles
+  };
+
+  const applyStyle = (prefix, suffix = "") => {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = formData.content;
+    const selectedText = text.substring(start, end);
+    
+    const before = text.substring(0, start);
+    const after = text.substring(end);
+    
+    const newContent = `${before}${prefix}${selectedText}${suffix}${after}`;
+    
+    // Actualitzem l'estat del contingut i del resum automàtic
+    const words = newContent.trim().split(/\s+/).slice(0, 20).join(" ");
+    setFormData({
+      ...formData,
+      content: newContent,
+      excerpt: words + (newContent.split(/\s+/).length > 20 ? "..." : "")
+    });
+
+    // Restaurar el focus i la selecció
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+    }, 0);
   };
 
   // --- ARTICLES ---
@@ -548,8 +578,38 @@ export default function Dashboard() {
               onChange={e => setFormData({...formData, excerpt: e.target.value})} 
               style={{ padding: '0.8rem', minHeight: '80px', borderRadius: '8px' }} 
             />
+
+            {/* BARRA D'EINES DE FORMAT */}
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', background: '#f8fafc', padding: '0.5rem', borderRadius: '8px 8px 0 0', border: '1px solid var(--gray-300)', borderBottom: 'none' }}>
+               <button type="button" onClick={() => applyStyle("# ")} className="btn-tool" title="Encapçalament 1">H1</button>
+               <button type="button" onClick={() => applyStyle("## ")} className="btn-tool" title="Encapçalament 2">H2</button>
+               <button type="button" onClick={() => applyStyle("### ")} className="btn-tool" title="Encapçalament 3">H3</button>
+               <button type="button" onClick={() => applyStyle("#### ")} className="btn-tool" title="Encapçalament 4">H4</button>
+               <div style={{ width: '1px', background: 'var(--gray-300)', margin: '0 0.5rem' }}></div>
+               <button type="button" onClick={() => applyStyle("**", "**")} className="btn-tool" style={{ fontWeight: 800 }} title="Negreta">B</button>
+               <button type="button" onClick={() => applyStyle("*", "*")} className="btn-tool" style={{ fontStyle: 'italic' }} title="Cursiva">I</button>
+               <style>{`
+                  .btn-tool {
+                    background: white;
+                    border: 1px solid var(--gray-300);
+                    color: var(--primary-dark);
+                    padding: 0.3rem 0.8rem;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 0.85rem;
+                    transition: all 0.2s;
+                  }
+                  .btn-tool:hover {
+                    background: var(--primary-blue);
+                    color: white;
+                    border-color: var(--primary-blue);
+                  }
+               `}</style>
+            </div>
             
             <textarea 
+              ref={contentRef}
               placeholder="Contingut (Markdown)" 
               value={formData.content} 
               onChange={e => {
@@ -562,7 +622,7 @@ export default function Dashboard() {
                 });
               }} 
               required 
-              style={{ padding: '0.8rem', minHeight: '300px', borderRadius: '8px' }} 
+              style={{ padding: '0.8rem', minHeight: '300px', borderRadius: '0 0 8px 8px', border: '1px solid var(--gray-300)', marginTop: '-1px' }} 
             />
             
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
