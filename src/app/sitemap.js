@@ -5,7 +5,7 @@ export default async function sitemap() {
   const baseUrl = "https://mesenlladorio.com"; // Canviar al domini real
 
   // 1. Pàgines estàtiques del framework
-  const routes = ["", "/blog", "/youtube", "/about"].map((route) => ({
+  const routes = ["", "/blog", "/youtube", "/about", "/index"].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date().toISOString(),
     changeFrequency: "daily",

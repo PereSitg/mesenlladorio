@@ -74,9 +74,7 @@ export default function Dashboard() {
   const [pageImageFile, setPageImageFile] = useState(null);
   const [uploadingPage, setUploadingPage] = useState(false);
   
-  // Diagnòstic de connexió
-  const [diagStatus, setDiagStatus] = useState(null); // { firebase: 'pending' | 'ok' | 'err', cloudinary: 'pending' | 'ok' | 'err', msg: string }
-  const [isCheckingDiag, setIsCheckingDiag] = useState(false);
+  const [uploadingPage, setUploadingPage] = useState(false);
 
   useEffect(() => {
     initPdf();
@@ -122,42 +120,6 @@ export default function Dashboard() {
     return Promise.race([promise, timeout]);
   };
 
-  const testConnection = async () => {
-    setIsCheckingDiag(true);
-    setDiagStatus({ firebase: 'pending', cloudinary: 'pending', msg: 'Verificant serveis...' });
-    
-    let fbRes = 'pending';
-    let clRes = 'pending';
-    let errorMsg = '';
-
-    // Test Firebase Directe (sense passar per loadPosts)
-    try {
-      const { getDoc, doc } = await import("firebase/firestore");
-      // Intentem llegir un doc que no existeixi, només per veure si Firebase respon
-      await withTimeout(getDoc(doc(db, "posts", "ping_test")), 8000, "prova de xarxa Firebase");
-      fbRes = 'ok';
-    } catch (e) {
-      if (e.code === 'permission-denied') fbRes = 'ok'; // Si respon permission-denied, és que HI HA CONNEXIÓ
-      else {
-        fbRes = 'err';
-        errorMsg += `Firebase: ${e.code || e.message}. `;
-      }
-    }
-
-    // Test Cloudinary
-    try {
-      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '';
-      if (!cloudName) throw new Error("Falta NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME");
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/config`);
-      clRes = (res.status < 500) ? 'ok' : 'err';
-    } catch (e) {
-      clRes = 'err';
-      errorMsg += `Cloudinary: ${e.message}. `;
-    }
-
-    setDiagStatus({ firebase: fbRes, cloudinary: clRes, msg: errorMsg || 'Tot correcte! Si Firebase surt OK i no veus dades, revisa les Firestore Rules.' });
-    setIsCheckingDiag(false);
-  };
 
   const generateSlug = (text) => {
     if (!text) return "";
@@ -418,57 +380,10 @@ export default function Dashboard() {
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h1 style={{ fontSize: '1.8rem', color: 'var(--primary-dark)', cursor: 'pointer' }} onClick={() => setView('menu')}>Panell de Control</h1>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button onClick={testConnection} disabled={isCheckingDiag} className="btn" style={{ background: 'var(--gray-200)', color: 'var(--primary-blue)', fontSize: '0.75rem', padding: '0.3rem 0.8rem' }}>
-            {isCheckingDiag ? 'Verificant...' : '🔍 Test Connexió'}
-          </button>
           <button onClick={handleLogout} className="btn" style={{ background: 'transparent', border: '1px solid var(--primary-blue)', color: 'var(--primary-blue)', padding: '0.3rem 0.8rem', fontSize: '0.8rem' }}>Sortir</button>
         </div>
       </header>
 
-      {/* RESULTAT DIAGNÒSTIC */}
-      {diagStatus && (
-        <div className={`card ${diagStatus.firebase === 'ok' && diagStatus.cloudinary === 'ok' ? 'diag-ok' : 'diag-err'}`} style={{ padding: '1.2rem', borderRadius: '12px', marginBottom: '1.5rem', border: '2px solid' }}>
-          <h3 style={{ marginTop: 0, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {diagStatus.firebase === 'ok' && diagStatus.cloudinary === 'ok' ? '✅ Connexió Establerta' : '⚠️ Alerta de Configuració'}
-          </h3>
-          <p style={{ fontSize: '0.95rem', marginBottom: '1rem' }}>{diagStatus.msg}</p>
-          
-          <div style={{ background: 'rgba(0,0,0,0.05)', padding: '0.8rem', borderRadius: '8px', fontSize: '0.75rem', marginBottom: '1rem' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '0.3rem' }}>Taula de Claus (Browser Sees):</div>
-            <div>API KEY: {process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? '✅ Carregada' : '❌ NO TROBADA'}</div>
-            <div>PROJ. ID: {process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? `✅ ${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}` : '❌ NO TROBADA'}</div>
-            <div>CLOUD NAME: {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? `✅ ${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}` : '❌ NO TROBADA'}</div>
-            <div>UPL. PRESET: {process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ? '✅ Carregada' : '❌ NO TROBADA'}</div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div style={{ padding: '0.7rem', background: 'rgba(255,255,255,0.5)', borderRadius: '8px', textAlign: 'center' }}>
-               <strong>Firebase:</strong> {diagStatus.firebase === 'ok' ? '🟢 OK' : diagStatus.firebase === 'err' ? '🔴 ERROR' : '🟡 ...'}
-            </div>
-            <div style={{ padding: '0.7rem', background: 'rgba(255,255,255,0.5)', borderRadius: '8px', textAlign: 'center' }}>
-               <strong>Cloudinary:</strong> {diagStatus.cloudinary === 'ok' ? '🟢 OK' : diagStatus.cloudinary === 'err' ? '🔴 ERROR' : '🟡 ...'}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* VERIFICACIÓ DE CLAUS */}
-      {(() => {
-        const missingKeys = [];
-        if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) missingKeys.push("Firebase API Key");
-        if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) missingKeys.push("Cloudinary Cloud Name");
-        if (!process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET) missingKeys.push("Cloudinary Upload Preset");
-        
-        if (missingKeys.length > 0) {
-          return (
-            <div style={{ padding: '1rem', background: '#fee2e2', border: '1px solid #ef4444', borderRadius: '8px', marginBottom: '2rem', color: '#b91c1c' }}>
-              <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>⚠️ Atenció: Falten claus de configuració!</p>
-              <p style={{ fontSize: '0.9rem' }}>Les següents dades no estan configurades a Vercel/entorn: <strong>{missingKeys.join(", ")}</strong>. Algunes funcions (pujada de fotos o base de dades) podrien fallar.</p>
-            </div>
-          );
-        }
-        return null;
-      })()}
 
       {view === 'menu' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
@@ -584,9 +499,15 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input type="checkbox" id="isIndexedPost" checked={formData.isIndexed} onChange={e => setFormData({...formData, isIndexed: e.target.checked})} />
-              <label htmlFor="isIndexedPost">Indexar a Google</label>
+            <div style={{ padding: '1.2rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid var(--gray-200)' }}>
+              <h4 style={{ margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>🔍 SEO i Visibilitat</h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.5rem', background: 'white', borderRadius: '8px', border: '1px solid var(--gray-100)' }}>
+                <input type="checkbox" id="isIndexedPost" checked={formData.isIndexed} onChange={e => setFormData({...formData, isIndexed: e.target.checked})} style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }} />
+                <label htmlFor="isIndexedPost" style={{ fontWeight: 600, cursor: 'pointer' }}>Indexar a Google i apareixer a l'índex web</label>
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.5rem', paddingLeft: '2rem' }}>
+                Si està marcat, l'article serà visible per cercadors i apareixerà automàticament a la pàgina d'índex.
+              </p>
             </div>
             <textarea 
               placeholder="Resum (S'omple sol si no escrius res)" 
@@ -629,12 +550,20 @@ export default function Dashboard() {
       {/* PAGES LIST */}
       {view === 'pages' && (
         <div className="card">
-          <h2>Pàgines Independents</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h2>Pàgines Independents</h2>
+            <button className="btn" onClick={() => openPageForm()}>+ Nova Pàgina</button>
+          </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
             <tbody>
               {pagesList.map(p => (
                 <tr key={p.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
-                  <td style={{ padding: '0.8rem' }}>{p.title} {p.isIndexed === false && <span style={{fontSize: '0.7rem', color: 'red'} }>(No Indexat)</span>}</td>
+                  <td style={{ padding: '0.8rem' }}>
+                    <strong>{p.title}</strong>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--gray-500)', marginTop: '0.2rem' }}>
+                       URL: /{p.slug} • {p.isIndexed !== false ? <span style={{color: '#166534'}}>🟢 Indexada</span> : <span style={{color: '#991b1b'}}>🔴 No Indexada</span>}
+                    </div>
+                  </td>
                   <td style={{ textAlign: 'right' }}>
                     <button onClick={() => openPageForm(p)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✏️</button>
                     <button onClick={() => handleDeletePage(p.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>🗑️</button>
@@ -677,9 +606,15 @@ export default function Dashboard() {
               <input type="text" placeholder="https://..." value={pageFormData.imageUrl} onChange={e => setPageFormData({...pageFormData, imageUrl: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input type="checkbox" id="isIndexedPage" checked={pageFormData.isIndexed} onChange={e => setPageFormData({...pageFormData, isIndexed: e.target.checked})} />
-              <label htmlFor="isIndexedPage">Indexar a Google</label>
+            <div style={{ padding: '1.2rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid var(--gray-200)' }}>
+              <h4 style={{ margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>🔍 SEO i Visibilitat</h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.5rem', background: 'white', borderRadius: '8px', border: '1px solid var(--gray-100)' }}>
+                <input type="checkbox" id="isIndexedPage" checked={pageFormData.isIndexed} onChange={e => setPageFormData({...pageFormData, isIndexed: e.target.checked})} style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }} />
+                <label htmlFor="isIndexedPage" style={{ fontWeight: 600, cursor: 'pointer' }}>Indexar a Google i apareixer a l'índex web</label>
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.5rem', paddingLeft: '2rem' }}>
+                Si està marcat, la pàgina serà visible per cercadors i s'afegirà a l'índex de continguts.
+              </p>
             </div>
             <textarea placeholder="Contingut (Markdown)" value={pageFormData.content} onChange={e => setPageFormData({...pageFormData, content: e.target.value})} required style={{ padding: '0.8rem', minHeight: '400px' }} />
             <div style={{ display: 'flex', gap: '1rem' }}>
