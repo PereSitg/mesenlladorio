@@ -35,7 +35,7 @@ export default async function Home() {
       }}>
         <div style={{ position: 'relative', zIndex: 10, maxWidth: '800px' }}>
           <h1 style={{ fontSize: '4rem', fontWeight: 800, lineHeight: 1.1, marginBottom: '1.5rem', letterSpacing: '-0.03em' }}>
-            Tecnologia, xarxes socials,<br /> notícies i coses random
+            Tecnologia, xarxes socials, notícies <br /> i coses random
           </h1>
           <p style={{ fontSize: '1.35rem', opacity: 0.9, marginBottom: '3rem', maxWidth: '650px', lineHeight: 1.6, fontWeight: 300 }}>
             Benvingut a <strong>Més enllà d&apos;Orió</strong>. Històries de fraus, criptomonedes, reflexions sobre el futur de la tecnologia i casos totalment <i>random</i> que et faran explotar el cap.
