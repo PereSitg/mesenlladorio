@@ -143,17 +143,19 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Blog Section */}
-      {latestPosts.length > 0 && (
-        <section style={{ padding: '2rem 0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <h2 style={{ fontSize: '3rem', color: 'var(--primary-dark)', fontWeight: 800, marginBottom: '0.5rem', letterSpacing: '-0.03em' }}>Els nostres escrits</h2>
-              <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '1.2rem' }}>Articles d&apos;opinió, anàlisi i curiositats sobre el món digital.</p>
-            </div>
-            <Link href="/blog" className="btn" style={{ background: 'transparent', color: 'var(--primary-blue)', border: '2px solid var(--primary-blue)', fontWeight: 600, padding: '0.8rem 1.5rem', borderRadius: '12px' }}>Llegir el Blog &rarr;</Link>
+      {/* Blog Section - SEMPRE VISIBLE PERQUÈ ES VEGI L'ESTRUCTURA */}
+      <section style={{ padding: '2rem 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h2 style={{ fontSize: '3rem', color: 'var(--primary-dark)', fontWeight: 800, marginBottom: '0.5rem', letterSpacing: '-0.03em' }}>Els nostres escrits</h2>
+            <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '1.2rem' }}>Articles d&apos;opinió, anàlisi i curiositats sobre el món digital.</p>
           </div>
+          {latestPosts.length > 0 && (
+            <Link href="/blog" className="btn" style={{ background: 'transparent', color: 'var(--primary-blue)', border: '2px solid var(--primary-blue)', fontWeight: 600, padding: '0.8rem 1.5rem', borderRadius: '12px' }}>Llegir el Blog &rarr;</Link>
+          )}
+        </div>
 
+        {latestPosts.length > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
             {latestPosts.map(post => (
               <Link href={`/blog/${post.slug}`} key={post.id} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', textDecoration: 'none', color: 'inherit' }}>
@@ -178,8 +180,13 @@ export default async function Home() {
               </Link>
             ))}
           </div>
-        </section>
-      )}
+        ) : (
+          <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--gray-50)', borderRadius: '24px', border: '2px dashed var(--gray-200)' }}>
+            <p style={{ fontSize: '1.2rem', color: 'var(--gray-500)', margin: 0 }}>Molt aviat publicarem els nostres primers articles aquí. ✨</p>
+            <p style={{ fontSize: '0.9rem', color: 'var(--gray-400)', marginTop: '0.5rem' }}>Pots crear un nou article des de l&apos;Administració per veure&apos;l aquí mateix.</p>
+          </div>
+        )}
+      </section>
 
       <style dangerouslySetInnerHTML={{__html: `
         .zoom-on-hover:hover {
