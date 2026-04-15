@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getFeaturedVideo, getAllVideos } from "@/lib/firebase/videos";
+import { getAllPosts } from "@/lib/firebase/posts";
 import YouTubePlayer from "@/components/YouTubePlayer";
 
 export const dynamic = "force-dynamic";
@@ -17,12 +18,16 @@ export const metadata = {
 export default async function Home() {
   const featuredVideo = await getFeaturedVideo();
   const allVideos = await getAllVideos();
+  const allPosts = await getAllPosts();
   
   // Filtrem els vídeos que s'han de mostrar al Home (galeria inferior)
   const homeVideos = allVideos.filter(v => v.showOnHome);
+  
+  // Agafem els 3 últims articles per a la Home
+  const latestPosts = allPosts.slice(0, 3);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem', paddingBottom: '3rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '4.5rem', paddingBottom: '3rem' }}>
       {/* Hero Section */}
       <section style={{ 
         position: 'relative', 
@@ -54,7 +59,8 @@ export default async function Home() {
       
       {/* Featured Video Player - NOMÉS SI EXISTEIX */}
       {featuredVideo && (
-        <section style={{ maxWidth: '820px', margin: '0 auto', width: '100%' }}>
+        <section style={{ maxWidth: '820px', margin: '0 auto', width: '100%', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '1.8rem', color: 'var(--primary-dark)', fontWeight: 800, marginBottom: '2rem', letterSpacing: '-0.02em' }}>Últim vídeo a YouTube</h2>
           <YouTubePlayer 
             videoId={featuredVideo.videoId} 
             title={featuredVideo.title} 
@@ -66,14 +72,11 @@ export default async function Home() {
 
       {/* Videos Section - NOMÉS SI N'HI HA MARCATS PER AL HOME */}
       {homeVideos.length > 0 && (
-        <section style={{ background: 'var(--gray-50)', padding: '4rem 2rem', borderRadius: '40px', margin: '0 -1rem' }}>
+        <section style={{ background: 'var(--gray-50)', padding: '5rem 2rem', borderRadius: '40px', margin: '0 -1rem' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', flexWrap: 'wrap', gap: '1.5rem' }}>
-              <div>
-                <h2 style={{ fontSize: '2.5rem', color: 'var(--primary-dark)', fontWeight: 800, marginBottom: '0.5rem', letterSpacing: '-0.03em' }}>Últims vídeos i novetats</h2>
-                <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '1.1rem' }}>No et perdis el contingut més recent i les nostres properes estrenes.</p>
-              </div>
-              <Link href="/youtube" className="btn" style={{ background: 'transparent', color: 'var(--primary-blue)', border: '2px solid var(--primary-blue)', fontWeight: 600, padding: '0.8rem 1.5rem', borderRadius: '12px' }}>Veure tots &rarr;</Link>
+            <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+              <h2 style={{ fontSize: '2.5rem', color: 'var(--primary-dark)', fontWeight: 800, marginBottom: '0.8rem', letterSpacing: '-0.03em' }}>Últims vídeos i novetats</h2>
+              <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '1.15rem' }}>No et perdis el contingut més recent i les nostres properes estrenes.</p>
             </div>
             
             <div style={{ 
@@ -136,6 +139,44 @@ export default async function Home() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* Blog Section */}
+      {latestPosts.length > 0 && (
+        <section style={{ padding: '2rem 0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h2 style={{ fontSize: '3rem', color: 'var(--primary-dark)', fontWeight: 800, marginBottom: '0.5rem', letterSpacing: '-0.03em' }}>Últimes entrades al blog</h2>
+              <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '1.2rem' }}>Articles d&apos;opinió, anàlisi i curiositats sobre el món digital.</p>
+            </div>
+            <Link href="/blog" className="btn" style={{ background: 'transparent', color: 'var(--primary-blue)', border: '2px solid var(--primary-blue)', fontWeight: 600, padding: '0.8rem 1.5rem', borderRadius: '12px' }}>Llegir el Blog &rarr;</Link>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
+            {latestPosts.map(post => (
+              <Link href={`/blog/${post.slug}`} key={post.id} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '16/10', overflow: 'hidden' }}>
+                   <img 
+                    src={post.imageUrl || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80"} 
+                    alt={post.title} 
+                    style={{ objectFit: 'cover', width: '100%', height: '100%', transition: 'transform 0.6s ease' }} 
+                    className="zoom-on-hover"
+                  />
+                </div>
+                <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--primary-blue)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.75rem', letterSpacing: '0.05em' }}>
+                    {new Date(post.createdAt).toLocaleDateString('ca-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                  <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '1rem', lineHeight: 1.3, color: 'var(--primary-dark)' }}>{post.title}</h3>
+                  <p style={{ fontSize: '0.95rem', color: 'rgba(0,0,0,0.6)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '1.5rem' }}>
+                    {post.excerpt}
+                  </p>
+                  <span style={{ marginTop: 'auto', color: 'var(--primary-blue)', fontWeight: 700, fontSize: '0.9rem' }}>Llegir més &rarr;</span>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
       )}
