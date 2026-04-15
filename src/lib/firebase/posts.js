@@ -20,12 +20,24 @@ export const getAllPosts = async () => {
   try {
     const q = query(collection(db, COLLECTION_NAME), orderBy("createdAt", "desc"));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      // Convertim el timestamp de Firebase a una data llegible o string
-      createdAt: doc.data().createdAt?.toDate().toISOString() || new Date().toISOString()
-    }));
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      let dateStr = new Date().toISOString();
+      
+      if (data.createdAt) {
+        if (typeof data.createdAt.toDate === 'function') {
+          dateStr = data.createdAt.toDate().toISOString();
+        } else if (typeof data.createdAt === 'string') {
+          dateStr = data.createdAt;
+        }
+      }
+
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: dateStr
+      };
+    });
   } catch (error) {
     console.error("Error fetching posts:", error);
     return [];
@@ -40,10 +52,21 @@ export const getPostBySlug = async (slug) => {
     if (querySnapshot.empty) return null;
     
     const docData = querySnapshot.docs[0];
+    const data = docData.data();
+    let dateStr = new Date().toISOString();
+    
+    if (data.createdAt) {
+      if (typeof data.createdAt.toDate === 'function') {
+        dateStr = data.createdAt.toDate().toISOString();
+      } else if (typeof data.createdAt === 'string') {
+        dateStr = data.createdAt;
+      }
+    }
+
     return {
       id: docData.id,
-      ...docData.data(),
-      createdAt: docData.data().createdAt?.toDate().toISOString() || new Date().toISOString()
+      ...data,
+      createdAt: dateStr
     };
   } catch (error) {
     console.error("Error fetching post by slug:", error);
