@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getAllPosts } from '@/lib/firebase/posts';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: "Blog i Articles | Més enllà d'Orió",
   description: "Tecnologia, històries, criptomonedes i coses random.",

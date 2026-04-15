@@ -1,6 +1,8 @@
 import ReactMarkdown from 'react-markdown';
 import { getPostBySlug } from '@/lib/firebase/posts';
 import { notFound } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
 import ShareButtons from '@/components/ShareButtons';
 
 export async function generateMetadata({ params }) {

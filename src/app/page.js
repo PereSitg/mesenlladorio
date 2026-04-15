@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getFeaturedVideo, getAllVideos } from "@/lib/firebase/videos";
 import YouTubePlayer from "@/components/YouTubePlayer";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Més enllà d'Orió - Tecnologia, Estafes i Coses Random",
   description: "Tecnologia, històries increïbles, criptomonedes i curiositats. Parlem de tot allò que ens fascina i ens explota el cap.",

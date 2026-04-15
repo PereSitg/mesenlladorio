@@ -116,7 +116,7 @@ export default function Dashboard() {
 
   const withTimeout = (promise, ms = 20000, actionName = "operació") => {
     const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`❌ Temps d'espera esgotat (20s) per a: ${actionName}. El servidor no respon. Revisa la teva connexió.`)), ms)
+      setTimeout(() => reject(new Error(`❌ Temps d'espera esgotat (20s) per a: ${actionName}. Revisa si has redesplegat a Vercel.`)), ms)
     );
     return Promise.race([promise, timeout]);
   };
@@ -129,29 +129,32 @@ export default function Dashboard() {
     let clRes = 'pending';
     let errorMsg = '';
 
-    // Test Firebase
+    // Test Firebase Directe (sense passar per loadPosts)
     try {
-      await withTimeout(loadPosts(), 5000, "prova de Firebase");
+      const { getDoc, doc } = await import("firebase/firestore");
+      // Intentem llegir un doc que no existeixi, només per veure si Firebase respon
+      await withTimeout(getDoc(doc(db, "posts", "ping_test")), 8000, "prova de xarxa Firebase");
       fbRes = 'ok';
     } catch (e) {
-      fbRes = 'err';
-      errorMsg += `Firebase: ${e.message}. `;
+      if (e.code === 'permission-denied') fbRes = 'ok'; // Si respon permission-denied, és que HI HA CONNEXIÓ
+      else {
+        fbRes = 'err';
+        errorMsg += `Firebase: ${e.code || e.message}. `;
+      }
     }
 
-    // Test Cloudinary (dummy call to api)
+    // Test Cloudinary
     try {
-      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-      if (!cloudName) throw new Error("Falta el Cloud Name");
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/config`, { method: 'GET' });
-      // Nota: Cloudinary config API requereix auth per a detalls, però el 'fetch' ens dirà si el domini respon
-      if (res.status === 404 || res.ok || res.status === 401) clRes = 'ok'; // El servidor respon
-      else throw new Error(`Status ${res.status}`);
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '';
+      if (!cloudName) throw new Error("Falta NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME");
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/config`);
+      clRes = (res.status < 500) ? 'ok' : 'err';
     } catch (e) {
       clRes = 'err';
       errorMsg += `Cloudinary: ${e.message}. `;
     }
 
-    setDiagStatus({ firebase: fbRes, cloudinary: clRes, msg: errorMsg || 'Tots els serveis responen correctament! ✅' });
+    setDiagStatus({ firebase: fbRes, cloudinary: clRes, msg: errorMsg || 'Tot correcte! Si Firebase surt OK i no veus dades, revisa les Firestore Rules.' });
     setIsCheckingDiag(false);
   };
 
@@ -409,9 +412,18 @@ export default function Dashboard() {
       {diagStatus && (
         <div className={`card ${diagStatus.firebase === 'ok' && diagStatus.cloudinary === 'ok' ? 'diag-ok' : 'diag-err'}`} style={{ padding: '1.2rem', borderRadius: '12px', marginBottom: '1.5rem', border: '2px solid' }}>
           <h3 style={{ marginTop: 0, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {diagStatus.firebase === 'ok' && diagStatus.cloudinary === 'ok' ? '✅ Connexió Perfecta' : '⚠️ Problemes de Connexió'}
+            {diagStatus.firebase === 'ok' && diagStatus.cloudinary === 'ok' ? '✅ Connexió Establerta' : '⚠️ Alerta de Configuració'}
           </h3>
           <p style={{ fontSize: '0.95rem', marginBottom: '1rem' }}>{diagStatus.msg}</p>
+          
+          <div style={{ background: 'rgba(0,0,0,0.05)', padding: '0.8rem', borderRadius: '8px', fontSize: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '0.3rem' }}>Taula de Claus (Browser Sees):</div>
+            <div>API KEY: {process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? '✅ Carregada' : '❌ NO TROBADA'}</div>
+            <div>PROJ. ID: {process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? `✅ ${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}` : '❌ NO TROBADA'}</div>
+            <div>CLOUD NAME: {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? `✅ ${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}` : '❌ NO TROBADA'}</div>
+            <div>UPL. PRESET: {process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ? '✅ Carregada' : '❌ NO TROBADA'}</div>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div style={{ padding: '0.7rem', background: 'rgba(255,255,255,0.5)', borderRadius: '8px', textAlign: 'center' }}>
                <strong>Firebase:</strong> {diagStatus.firebase === 'ok' ? '🟢 OK' : diagStatus.firebase === 'err' ? '🔴 ERROR' : '🟡 ...'}
@@ -420,7 +432,6 @@ export default function Dashboard() {
                <strong>Cloudinary:</strong> {diagStatus.cloudinary === 'ok' ? '🟢 OK' : diagStatus.cloudinary === 'err' ? '🔴 ERROR' : '🟡 ...'}
             </div>
           </div>
-          {diagStatus.firebase === 'err' && <p style={{ fontSize: '0.8rem', marginTop: '1rem', color: '#7f1d1d' }}>💡 *Consell: Revisa que la teva IP estigui permesa a Firebase o que les claus a Vercel siguin correctes.*</p>}
         </div>
       )}
 
