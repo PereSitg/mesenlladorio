@@ -471,29 +471,16 @@ export default function Dashboard() {
 
       {/* ARTICLE FORM */}
       {view === 'form' && (
-        <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid var(--primary-blue)', paddingBottom: '0.5rem' }}>
              <h2 style={{ margin: 0 }}>{currentPost ? 'Editar Article' : 'Nou Article'}</h2>
              <span style={{ fontSize: '0.9rem', color: 'var(--gray-500)' }}>Detalls i Contingut</span>
           </header>
 
-          {/* IMPORTACIÓ DE DOCUMENTS - RESTAURAT PER A L'USUARI */}
-          <div style={{ padding: '1.2rem', background: 'var(--primary-light)', borderRadius: '12px', border: '1px solid var(--primary-blue)', marginBottom: '1.5rem' }}>
-             <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.6rem', fontSize: '1rem', color: 'var(--primary-dark)' }}>
-                📂 Importar Contingut (Word o PDF):
-             </label>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <label className="btn" style={{ background: 'var(--primary-blue)', fontSize: '0.9rem', padding: '0.6rem 1.2rem', cursor: 'pointer' }}>
-                  Triar Document
-                  <input type="file" accept=".pdf,.doc,.docx" onChange={handleDocUpload} style={{ display: 'none' }} />
-                </label>
-                {isExtracting && <p style={{ color: 'var(--primary-blue)', fontSize: '0.8rem', fontWeight: 600 }}>⌛ Llegint document...</p>}
-             </div>
-             <p style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.5rem' }}>Això omplirà automàticament el títol i el cos de l'article.</p>
-          </div>
-          
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-            <input type="text" placeholder="Títol" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value, slug: generateSlug(e.target.value)})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontWeight: 700, color: 'var(--primary-dark)' }}>Títol de l&apos;Article:</label>
+              <input type="text" placeholder="Escriu el títol aquí..." value={formData.title} onChange={e => setFormData({...formData, title: e.target.value, slug: generateSlug(e.target.value)})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', fontSize: '1.1rem' }} />
+            </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>
               <label style={{ fontWeight: 600 }}>📷 Foto del capçalera:</label>
@@ -578,16 +565,31 @@ export default function Dashboard() {
               style={{ padding: '0.8rem', minHeight: '300px', borderRadius: '8px' }} 
             />
             
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
               <button 
                 type="submit" 
                 className="btn" 
                 disabled={submitLoading || uploadingArticle} 
-                style={{ flex: 1, background: (uploadingArticle || submitLoading) ? 'var(--gray-300)' : 'var(--primary-blue)' }}
+                style={{ flex: 1, background: (uploadingArticle || submitLoading) ? 'var(--gray-300)' : 'var(--primary-blue)', fontSize: '1.1rem', fontWeight: 700, padding: '1rem' }}
               >
-                {submitLoading ? 'Sincronitzant...' : uploadingArticle ? 'S\'està pujant la foto...' : 'Desar finalment'}
+                {submitLoading ? 'Sincronitzant...' : uploadingArticle ? 'S\'està pujant la foto...' : 'DESAR ARTICLE ✨'}
               </button>
               <button type="button" className="btn" onClick={() => setView('list')} style={{ background: 'var(--gray-200)', color: 'black' }}>Cancel·lar</button>
+            </div>
+
+            {/* IMPORTACIÓ DE DOCUMENTS - ARA AL FINAL PER NO CONFONDRE */}
+            <div style={{ marginTop: '2rem', padding: '1.2rem', background: '#f1f5f9', borderRadius: '12px', border: '1px solid var(--gray-300)' }}>
+               <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.6rem', fontSize: '0.9rem', color: 'var(--gray-600)' }}>
+                  📂 Opcional: Importar des de Word o PDF
+               </label>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <label className="btn" style={{ background: 'var(--gray-500)', fontSize: '0.8rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+                     Triar Document
+                     <input type="file" accept=".pdf,.doc,.docx" onChange={handleDocUpload} style={{ display: 'none' }} />
+                  </label>
+                  {isExtracting && <p style={{ color: 'var(--primary-blue)', fontSize: '0.8rem', fontWeight: 600 }}>⌛ Llegint...</p>}
+               </div>
+               <p style={{ fontSize: '0.7rem', color: 'var(--gray-500)', marginTop: '0.4rem' }}>Això substituirà el títol i el text actuals pel contingut del fitxer.</p>
             </div>
           </form>
         </div>
