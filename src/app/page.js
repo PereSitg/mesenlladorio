@@ -159,7 +159,7 @@ export default async function Home() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
             {latestPosts.map(post => (
               <Link href={`/blog/${post.slug}`} key={post.id} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', textDecoration: 'none', color: 'inherit' }}>
-                <div style={{ position: 'relative', width: '100%', aspectRatio: '16/10', overflow: 'hidden' }}>
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
                    <img 
                     src={post.imageUrl || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80"} 
                     alt={post.title} 
@@ -175,7 +175,7 @@ export default async function Home() {
                   <p style={{ fontSize: '0.95rem', color: 'rgba(0,0,0,0.6)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '1.5rem' }}>
                     {post.excerpt}
                   </p>
-                  <span style={{ marginTop: 'auto', color: 'var(--primary-blue)', fontWeight: 700, fontSize: '0.9rem' }}>Llegir més &rarr;</span>
+                  <span style={{ marginTop: 'auto', color: 'var(--primary-blue)', fontWeight: 700, fontSize: '0.9rem' }}>Llegir article &rarr;</span>
                 </div>
               </Link>
             ))}
