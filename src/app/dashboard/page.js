@@ -540,7 +540,7 @@ export default function Dashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>
               <label style={{ fontWeight: 600 }}>📷 Pujar Foto a Cloudinary:</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <label className="btn" style={{ background: 'var(--gray-500)', fontSize: '0.8rem', padding: '0.5rem 1rem', cursor: 'pointer', margin: 0 }}>
+                <label className="btn" style={{ background: 'var(--primary-blue)', color: 'white', fontSize: '0.8rem', padding: '0.5rem 1rem', cursor: 'pointer', margin: 0 }}>
                   Triar Foto
                   <input type="file" accept="image/*" onChange={e => setArticleImageFile(e.target.files[0])} style={{ display: 'none' }} />
                 </label>
@@ -568,9 +568,28 @@ export default function Dashboard() {
               <input type="checkbox" id="isIndexedPost" checked={formData.isIndexed} onChange={e => setFormData({...formData, isIndexed: e.target.checked})} />
               <label htmlFor="isIndexedPost">Indexar a Google</label>
             </div>
-            <textarea placeholder="Resum" value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} style={{ padding: '0.8rem', minHeight: '80px', borderRadius: '8px' }} />
+            <textarea 
+              placeholder="Resum (S'omple sol si no escrius res)" 
+              value={formData.excerpt} 
+              onChange={e => setFormData({...formData, excerpt: e.target.value})} 
+              style={{ padding: '0.8rem', minHeight: '80px', borderRadius: '8px' }} 
+            />
             
-            <textarea placeholder="Contingut (Markdown)" value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} required style={{ padding: '0.8rem', minHeight: '300px', borderRadius: '8px' }} />
+            <textarea 
+              placeholder="Contingut (Markdown)" 
+              value={formData.content} 
+              onChange={e => {
+                const newContent = e.target.value;
+                const words = newContent.trim().split(/\s+/).slice(0, 20).join(" ");
+                setFormData({
+                  ...formData, 
+                  content: newContent,
+                  excerpt: words + (newContent.split(/\s+/).length > 20 ? "..." : "")
+                });
+              }} 
+              required 
+              style={{ padding: '0.8rem', minHeight: '300px', borderRadius: '8px' }} 
+            />
             
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>
