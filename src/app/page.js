@@ -148,7 +148,7 @@ export default async function Home() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h2 style={{ fontSize: '3rem', color: 'var(--primary-dark)', fontWeight: 800, marginBottom: '0.5rem', letterSpacing: '-0.03em' }}>Els nostres escrits</h2>
-            <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '1.2rem' }}>Articles d&apos;opinió, anàlisi i curiositats sobre el món digital.</p>
+            <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '1.2rem' }}>Articles d&apos;opinió, anàlisi i curiositats.</p>
           </div>
           {latestPosts.length > 0 && (
             <Link href="/blog" className="btn" style={{ background: 'transparent', color: 'var(--primary-blue)', border: '2px solid var(--primary-blue)', fontWeight: 600, padding: '0.8rem 1.5rem', borderRadius: '12px' }}>Llegir el Blog &rarr;</Link>

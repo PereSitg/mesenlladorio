@@ -25,6 +25,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const docInputRef = useRef(null);
+  const [contentImageSnippet, setContentImageSnippet] = useState("");
+  const [uploadingContentImage, setUploadingContentImage] = useState(false);
   
   // Vistes: 'menu', 'list', 'form', 'videos', 'video-form', 'pages', 'page-form'
   const [view, setView] = useState('menu'); 
@@ -167,6 +169,21 @@ export default function Dashboard() {
       }
     } catch (err) { alert(err.message || "Error al pujar la imatge."); }
     finally { setUploadingArticle(false); }
+  };
+
+  const handleContentImageUpload = async (file) => {
+    if (!file) return;
+    setUploadingContentImage(true);
+    setContentImageSnippet("");
+    try {
+      const url = await withTimeout(uploadToCloudinary(file), 20000, "pujada d'imatge de contingut");
+      if (url) {
+        const snippet = `![Imatge](${url})`;
+        setContentImageSnippet(snippet);
+        // alert("Imatge de contingut pujada! Copia el codi.");
+      }
+    } catch (err) { alert(err.message || "Error al pujar la imatge de contingut."); }
+    finally { setUploadingContentImage(false); }
   };
 
   const handleDocUpload = async (e) => {
@@ -517,6 +534,26 @@ export default function Dashboard() {
               <p style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.5rem', paddingLeft: '2rem' }}>
                 Si està marcat, l'article serà visible per cercadors i apareixerà automàticament a la pàgina d'índex.
               </p>
+            </div>
+
+            {/* EINA DE PUJADA D'IMATGES DE CONTINGUT */}
+            <div style={{ padding: '1rem', background: '#ecfdf5', borderRadius: '12px', border: '1px solid #10b981', marginBottom: '0.5rem' }}>
+               <h4 style={{ margin: '0 0 0.5rem 0', color: '#065f46', fontSize: '1rem' }}>📷 Afegir Imatges al Text</h4>
+               <p style={{ fontSize: '0.8rem', color: '#065f46', marginBottom: '1rem' }}>Puja fotos aquí per obtenir el codi que podràs enganxar dins de l&apos;article.</p>
+               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <label className="btn" style={{ background: '#10b981', color: 'white', fontSize: '0.8rem', padding: '0.6rem 1.2rem', cursor: uploadingContentImage ? 'default' : 'pointer' }}>
+                    {uploadingContentImage ? 'Pujant...' : 'Pujar Foto de Contingut'}
+                    <input type="file" accept="image/*" onChange={e => handleContentImageUpload(e.target.files[0])} disabled={uploadingContentImage} style={{ display: 'none' }} />
+                  </label>
+                  {contentImageSnippet && (
+                    <div style={{ flex: 1, minWidth: '200px' }}>
+                       <p style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.3rem', color: '#065f46' }}>Còpia i enganxa això al text:</p>
+                       <code style={{ display: 'block', background: 'white', padding: '0.5rem', borderRadius: '4px', border: '1px solid #10b981', fontSize: '0.8rem', wordBreak: 'break-all' }}>
+                         {contentImageSnippet}
+                       </code>
+                    </div>
+                  )}
+               </div>
             </div>
             <textarea 
               placeholder="Resum (S'omple sol si no escrius res)" 

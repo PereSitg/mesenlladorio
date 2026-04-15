@@ -22,6 +22,7 @@ export async function generateMetadata({ params }) {
   return {
     title: `${title} | Més enllà d'Orió`,
     description: description,
+    metadataBase: new URL('https://mesenlladorio.vercel.app'), // Assegurem base per a URLs relatives
     robots: {
       index: post.isIndexed !== false,
       follow: true,
@@ -29,12 +30,14 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: title,
       description: description,
+      url: `./${slug}`,
+      siteName: "Més enllà d'Orió",
       images: [
         {
           url: imageUrl,
           width: 1200,
           height: 630,
-          alt: `Imatge: ${title}`,
+          alt: title,
         },
       ],
       type: 'article',
@@ -85,6 +88,14 @@ export default async function BlogPost({ params }) {
         .markdown-content ul, .markdown-content ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
         .markdown-content li { margin-bottom: 0.5rem; }
         .markdown-content strong { color: var(--primary-dark); }
+        .markdown-content img { 
+          max-width: 100%; 
+          height: auto; 
+          border-radius: 16px; 
+          margin: 2rem auto; 
+          display: block; 
+          box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+        }
       `}} />
     </article>
   );
