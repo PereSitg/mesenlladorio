@@ -18,11 +18,12 @@ export async function generateMetadata({ params }) {
   const title = post.title;
   const description = post.excerpt;
   const imageUrl = post.imageUrl || "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=1200&q=80";
+  const absoluteUrl = `https://mesenlladorio.vercel.app/blog/${slug}`;
 
   return {
     title: `${title} | Més enllà d'Orió`,
     description: description,
-    metadataBase: new URL('https://mesenlladorio.vercel.app'), // Assegurem base per a URLs relatives
+    metadataBase: new URL('https://mesenlladorio.vercel.app'),
     robots: {
       index: post.isIndexed !== false,
       follow: true,
@@ -30,14 +31,16 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: title,
       description: description,
-      url: `./${slug}`,
+      url: absoluteUrl,
       siteName: "Més enllà d'Orió",
       images: [
         {
           url: imageUrl,
+          secureUrl: imageUrl,
           width: 1200,
           height: 630,
           alt: title,
+          type: 'image/png',
         },
       ],
       type: 'article',
