@@ -411,10 +411,10 @@ export default function Dashboard() {
             <span style={{ fontSize: '2.5rem' }}>📺</span>
             <h3>Vídeos ({videosList.length})</h3>
           </div>
-          <a href="/index" target="_blank" className="card" style={{ cursor: 'pointer', textAlign: 'center', textDecoration: 'none', color: 'inherit' }}>
-            <span style={{ fontSize: '2.5rem' }}>🔍</span>
-            <h3>Veure Índex Públic</h3>
-            <p style={{ fontSize: '0.7rem', color: 'var(--gray-500)' }}>Obre en nova pestanya</p>
+          <a href="/" target="_blank" className="card" style={{ cursor: 'pointer', textAlign: 'center', textDecoration: 'none', color: 'inherit' }}>
+            <span style={{ fontSize: '2.5rem' }}>🚀</span>
+            <h3>Veure Web Pública</h3>
+            <p style={{ fontSize: '0.7rem', color: 'var(--gray-500)' }}>Obre la pantalla d'inici</p>
           </a>
         </div>
       )}
