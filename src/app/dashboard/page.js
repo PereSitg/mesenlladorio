@@ -55,7 +55,8 @@ export default function Dashboard() {
     title: "",
     customThumbnailUrl: "",
     isFeatured: false,
-    showOnHome: false
+    showOnHome: false,
+    statusText: ""
   });
   const [videoImageFile, setVideoImageFile] = useState(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
@@ -276,11 +277,12 @@ export default function Dashboard() {
         title: video.title, 
         customThumbnailUrl: video.customThumbnailUrl || "",
         isFeatured: video.isFeatured || false,
-        showOnHome: video.showOnHome || false
+        showOnHome: video.showOnHome || false,
+        statusText: video.statusText || ""
       });
     } else {
       setCurrentVideo(null);
-      setVideoFormData({ videoId: "", title: "", customThumbnailUrl: "", isFeatured: false, showOnHome: false });
+      setVideoFormData({ videoId: "", title: "", customThumbnailUrl: "", isFeatured: false, showOnHome: false, statusText: "" });
     }
     setVideoImageFile(null);
     setView('video-form');
@@ -310,7 +312,8 @@ export default function Dashboard() {
         title: videoFormData.title ? videoFormData.title.trim() : "", 
         customThumbnailUrl: videoFormData.customThumbnailUrl ? videoFormData.customThumbnailUrl.trim() : "",
         isFeatured: !!videoFormData.isFeatured,
-        showOnHome: !!videoFormData.showOnHome
+        showOnHome: !!videoFormData.showOnHome,
+        statusText: videoFormData.statusText ? videoFormData.statusText.trim() : ""
       };
 
       const process = async () => {
@@ -728,6 +731,10 @@ export default function Dashboard() {
             <div>
               <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>Títol:</label>
               <input type="text" value={videoFormData.title} onChange={e => setVideoFormData({...videoFormData, title: e.target.value})} required style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)'}} />
+            </div>
+            <div>
+              <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>🏷️ Text d'estat (ex: "Properament", "Aquest divendres"):</label>
+              <input type="text" value={videoFormData.statusText} onChange={e => setVideoFormData({...videoFormData, statusText: e.target.value})} placeholder="Deixa-ho buit si el vídeo ja està publicat" style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)'}} />
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>

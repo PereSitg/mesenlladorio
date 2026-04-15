@@ -48,7 +48,10 @@ export const createVideo = async (videoData) => {
 
 export const updateVideo = async (id, videoData) => {
   const docRef = doc(db, COLLECTION_NAME, id);
-  await updateDoc(docRef, videoData);
+  await updateDoc(docRef, {
+    ...videoData,
+    updatedAt: new Date().toISOString()
+  });
 };
 
 export const deleteVideo = async (id) => {
