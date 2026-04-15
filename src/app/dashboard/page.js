@@ -609,8 +609,13 @@ export default function Dashboard() {
             />
             
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>
-                {submitLoading ? 'Sincronitzant...' : 'Desar finalment'}
+              <button 
+                type="submit" 
+                className="btn" 
+                disabled={submitLoading || uploadingArticle} 
+                style={{ flex: 1, background: (uploadingArticle || submitLoading) ? 'var(--gray-300)' : 'var(--primary-blue)' }}
+              >
+                {submitLoading ? 'Sincronitzant...' : uploadingArticle ? 'S\'està pujant la foto...' : 'Desar finalment'}
               </button>
               <button type="button" className="btn" onClick={() => setView('list')} style={{ background: 'var(--gray-200)', color: 'black' }}>Cancel·lar</button>
             </div>
