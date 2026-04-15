@@ -73,8 +73,6 @@ export default function Dashboard() {
   });
   const [pageImageFile, setPageImageFile] = useState(null);
   const [uploadingPage, setUploadingPage] = useState(false);
-  
-  const [uploadingPage, setUploadingPage] = useState(false);
 
   useEffect(() => {
     initPdf();
