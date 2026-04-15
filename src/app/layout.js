@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
     <html lang="ca">
       <body className={inter.className}>
         <Navbar />
-        <main className="layout-container" style={{ flex: 1 }}>
+        <main className="layout-container" style={{ flex: 1, paddingTop: '100px' }}>
           {children}
         </main>
         <Footer />

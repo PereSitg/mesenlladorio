@@ -3,16 +3,21 @@ import Link from 'next/link';
 export default function Navbar() {
   return (
     <header style={{ 
-      background: 'rgba(27, 79, 114, 0.85)', 
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
+      background: 'rgba(27, 79, 114, 0.9)', 
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
       color: 'white', 
-      padding: '0.75rem 0',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-      borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+      padding: '0.6rem 1.5rem',
+      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.25)',
+      position: 'fixed',
+      top: '1rem',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: '95%',
+      maxWidth: '1200px',
+      zIndex: 1000,
+      borderRadius: '999px',
+      border: '1px solid rgba(255, 255, 255, 0.15)',
     }}>
       <div className="layout-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Link href="/" style={{ fontSize: '1.5rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

@@ -26,7 +26,7 @@ export default async function Home() {
       {/* Hero Section */}
       <section style={{ 
         position: 'relative', 
-        padding: '4rem 2.5rem', 
+        padding: '5rem 2.5rem 4rem', 
         borderRadius: '32px', 
         background: 'linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%)',
         color: 'white',
