@@ -18,7 +18,8 @@ export default async function YouTubePage() {
     { videoId: "3", title: "El misteri d'Internet que ningú ha resolt" },
   ];
 
-  const displayVideos = videos.length > 0 ? videos : defaultVideos;
+  const displayVideos = (videos.length > 0 ? videos : defaultVideos)
+    .filter(v => v.showOnYoutube !== false);
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
@@ -41,26 +42,63 @@ export default async function YouTubePage() {
         </a>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '2.5rem' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+        gap: '3rem' 
+      }}>
         {displayVideos.map(video => (
-          <div key={video.id || video.videoId} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
-            <YouTubePlayer 
-              videoId={video.videoId} 
-              title={video.title} 
-              isFeatured={false}
-              customThumbnailUrl={video.customThumbnailUrl}
-            />
-            <div style={{ padding: '1.5rem', background: 'white' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.2rem', lineHeight: 1.4 }}>{video.title}</h3>
-              <a 
-                href={`https://youtube.com/watch?v=${video.videoId}`} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="btn" 
-                style={{ textAlign: 'center', background: '#f1f1f1', color: 'var(--primary-dark)', width: '100%', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600 }}
-              >
-                Veure a YouTube
-              </a>
+          <div key={video.id || video.videoId} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRadius: '24px', border: 'none', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', background: 'white' }}>
+            <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
+              <img 
+                src={video.customThumbnailUrl || (video.videoId ? `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg` : "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=800&q=80")} 
+                alt={video.title} 
+                style={{ objectFit: 'cover', width: '100%', height: '100%' }} 
+              />
+              {(video.statusText || !video.videoId) && (
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '1rem', 
+                  right: '1rem', 
+                  background: video.videoId ? 'rgba(0,0,0,0.8)' : 'var(--primary-blue)', 
+                  color: 'white', 
+                  padding: '0.4rem 0.8rem', 
+                  borderRadius: '8px', 
+                  fontSize: '0.7rem', 
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  backdropFilter: 'blur(8px)'
+                }}>
+                  {video.statusText || "Properament"}
+                </div>
+              )}
+            </div>
+            <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1.5rem', lineHeight: 1.4, color: 'var(--primary-dark)' }}>{video.title}</h3>
+              {video.videoId ? (
+                <a 
+                  href={`https://youtube.com/watch?v=${video.videoId}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="btn" 
+                  style={{ textAlign: 'center', background: 'var(--primary-blue)', width: '100%', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 600, padding: '0.8rem' }}
+                >
+                  Veure Vídeo
+                </a>
+              ) : (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '0.8rem', 
+                  background: 'var(--gray-50)', 
+                  color: 'var(--gray-500)', 
+                  width: '100%', 
+                  borderRadius: '12px', 
+                  fontWeight: 600,
+                  border: '2px dashed var(--gray-200)'
+                }}>
+                  Disponible aviat
+                </div>
+              )}
             </div>
           </div>
         ))}

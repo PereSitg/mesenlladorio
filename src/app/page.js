@@ -76,7 +76,11 @@ export default async function Home() {
               <Link href="/youtube" className="btn" style={{ background: 'transparent', color: 'var(--primary-blue)', border: '2px solid var(--primary-blue)', fontWeight: 600, padding: '0.8rem 1.5rem', borderRadius: '12px' }}>Veure tots &rarr;</Link>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '3rem' }}>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+              gap: '3rem' 
+            }} className="video-grid-3">
               {homeVideos.map(video => (
                 <div key={video.id} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRadius: '24px', border: 'none', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', background: 'white', transition: 'transform 0.3s ease' }}>
                   <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>

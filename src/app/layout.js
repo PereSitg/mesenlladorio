@@ -8,9 +8,6 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
   title: "Més enllà d'Orió",
   description: "Tecnologia, estafes, històries, criptomonedes i coses random. Parlem de tot allò que ens interessa i passa pel cap.",
-  icons: {
-    icon: '/favicon.ico',
-  },
 };
 
 export default function RootLayout({ children }) {

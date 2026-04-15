@@ -56,6 +56,7 @@ export default function Dashboard() {
     customThumbnailUrl: "",
     isFeatured: false,
     showOnHome: false,
+    showOnYoutube: true,
     statusText: ""
   });
   const [videoImageFile, setVideoImageFile] = useState(null);
@@ -238,11 +239,12 @@ export default function Dashboard() {
         customThumbnailUrl: video.customThumbnailUrl || "",
         isFeatured: video.isFeatured || false,
         showOnHome: video.showOnHome || false,
+        showOnYoutube: video.showOnYoutube !== undefined ? video.showOnYoutube : true,
         statusText: video.statusText || ""
       });
     } else {
       setCurrentVideo(null);
-      setVideoFormData({ videoId: "", title: "", customThumbnailUrl: "", isFeatured: false, showOnHome: false, statusText: "" });
+      setVideoFormData({ videoId: "", title: "", customThumbnailUrl: "", isFeatured: false, showOnHome: false, showOnYoutube: true, statusText: "" });
     }
     setVideoImageFile(null);
     setView('video-form');
@@ -273,6 +275,7 @@ export default function Dashboard() {
         customThumbnailUrl: videoFormData.customThumbnailUrl ? videoFormData.customThumbnailUrl.trim() : "",
         isFeatured: !!videoFormData.isFeatured,
         showOnHome: !!videoFormData.showOnHome,
+        showOnYoutube: !!videoFormData.showOnYoutube,
         statusText: videoFormData.statusText ? videoFormData.statusText.trim() : ""
       };
 
@@ -707,6 +710,10 @@ export default function Dashboard() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <input type="checkbox" id="vHome" checked={videoFormData.showOnHome} onChange={e => setVideoFormData({...videoFormData, showOnHome: e.target.checked})} />
                 <label htmlFor="vHome">Mostrar al Home</label>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input type="checkbox" id="vYoutube" checked={videoFormData.showOnYoutube} onChange={e => setVideoFormData({...videoFormData, showOnYoutube: e.target.checked})} />
+                <label htmlFor="vYoutube">Mostrar a la pàgina YouTube</label>
               </div>
             </div>
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
