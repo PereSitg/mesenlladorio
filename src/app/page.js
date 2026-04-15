@@ -144,6 +144,11 @@ export default async function Home() {
         .zoom-on-hover:hover {
            transform: scale(1.08);
         }
+        @media (min-width: 1024px) {
+          .video-grid-3 {
+             grid-template-columns: repeat(3, 1fr) !important;
+          }
+        }
       `}} />
     </div>
   );

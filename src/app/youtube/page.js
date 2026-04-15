@@ -46,7 +46,7 @@ export default async function YouTubePage() {
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
         gap: '3rem' 
-      }}>
+      }} className="video-grid-3">
         {displayVideos.map(video => (
           <div key={video.id || video.videoId} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRadius: '24px', border: 'none', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', background: 'white' }}>
             <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
@@ -103,6 +103,13 @@ export default async function YouTubePage() {
           </div>
         ))}
       </div>
+      <style dangerouslySetInnerHTML={{__html: `
+        @media (min-width: 1024px) {
+          .video-grid-3 {
+             grid-template-columns: repeat(3, 1fr) !important;
+          }
+        }
+      `}} />
     </div>
   );
 }

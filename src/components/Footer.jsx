@@ -12,8 +12,7 @@ export default function Footer() {
         <div>
           <p style={{ fontWeight: 'bold', fontSize: '1.4rem', marginBottom: '0.5rem' }}>Més enllà d&apos;Orió</p>
           <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1rem' }}>
-            <Link href="/" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '1rem' }}>Inici</Link>
-            <Link href="/" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '1rem' }}>Youtube Videos</Link>
+            <Link href="/youtube" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '1.1rem', fontWeight: 600 }}>Youtube Videos</Link>
           </div>
           <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)' }}>&copy; {new Date().getFullYear()} Tots els drets reservats.</p>
         </div>
