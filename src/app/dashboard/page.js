@@ -428,7 +428,7 @@ export default function Dashboard() {
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <h1 style={{ fontSize: '1.8rem', color: 'var(--primary-dark)', cursor: 'pointer', margin: 0 }} onClick={() => setView('menu')}>Panell de Control</h1>
-          <span style={{ background: 'var(--primary-blue)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 }}>v1.1 ACTUALITZAT</span>
+           <span style={{ background: '#16a34a', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 }}>v1.2 BARRA DE FORMAT</span>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button onClick={handleLogout} className="btn" style={{ background: 'transparent', border: '1px solid var(--primary-blue)', color: 'var(--primary-blue)', padding: '0.3rem 0.8rem', fontSize: '0.8rem' }}>Sortir</button>
@@ -501,6 +501,7 @@ export default function Dashboard() {
 
       {/* ARTICLE FORM */}
       {view === 'form' && (
+        <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '2px solid var(--primary-blue)', paddingBottom: '0.5rem' }}>
              <h2 style={{ margin: 0 }}>{currentPost ? 'Editar Article' : 'Nou Article'}</h2>
              <span style={{ fontSize: '0.9rem', color: 'var(--gray-500)' }}>Detalls i Contingut</span>
@@ -579,8 +580,8 @@ export default function Dashboard() {
               style={{ padding: '0.8rem', minHeight: '80px', borderRadius: '8px' }} 
             />
 
-            {/* BARRA D'EINES DE FORMAT */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', background: '#f8fafc', padding: '0.5rem', borderRadius: '8px 8px 0 0', border: '1px solid var(--gray-300)', borderBottom: 'none' }}>
+             {/* BARRA D'EINES DE FORMAT - Ara més separada i visible */}
+             <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', background: '#f1f5f9', padding: '0.8rem', borderRadius: '12px 12px 0 0', border: '2px solid var(--primary-blue)', borderBottom: 'none', marginTop: '1rem' }}>
                <button type="button" onClick={() => applyStyle("# ")} className="btn-tool" title="Encapçalament 1">H1</button>
                <button type="button" onClick={() => applyStyle("## ")} className="btn-tool" title="Encapçalament 2">H2</button>
                <button type="button" onClick={() => applyStyle("### ")} className="btn-tool" title="Encapçalament 3">H3</button>
