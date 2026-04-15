@@ -72,6 +72,10 @@ export default function Dashboard() {
   });
   const [pageImageFile, setPageImageFile] = useState(null);
   const [uploadingPage, setUploadingPage] = useState(false);
+  
+  // Diagnòstic de connexió
+  const [diagStatus, setDiagStatus] = useState(null); // { firebase: 'pending' | 'ok' | 'err', cloudinary: 'pending' | 'ok' | 'err', msg: string }
+  const [isCheckingDiag, setIsCheckingDiag] = useState(false);
 
   useEffect(() => {
     initPdf();
@@ -110,11 +114,45 @@ export default function Dashboard() {
     setView('menu');
   };
 
-  const withTimeout = (promise, ms = 20000) => {
+  const withTimeout = (promise, ms = 20000, actionName = "operació") => {
     const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Temps d'espera esgotat (20s). El servidor no respon.")), ms)
+      setTimeout(() => reject(new Error(`❌ Temps d'espera esgotat (20s) per a: ${actionName}. El servidor no respon. Revisa la teva connexió.`)), ms)
     );
     return Promise.race([promise, timeout]);
+  };
+
+  const testConnection = async () => {
+    setIsCheckingDiag(true);
+    setDiagStatus({ firebase: 'pending', cloudinary: 'pending', msg: 'Verificant serveis...' });
+    
+    let fbRes = 'pending';
+    let clRes = 'pending';
+    let errorMsg = '';
+
+    // Test Firebase
+    try {
+      await withTimeout(loadPosts(), 5000, "prova de Firebase");
+      fbRes = 'ok';
+    } catch (e) {
+      fbRes = 'err';
+      errorMsg += `Firebase: ${e.message}. `;
+    }
+
+    // Test Cloudinary (dummy call to api)
+    try {
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+      if (!cloudName) throw new Error("Falta el Cloud Name");
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/config`, { method: 'GET' });
+      // Nota: Cloudinary config API requereix auth per a detalls, però el 'fetch' ens dirà si el domini respon
+      if (res.status === 404 || res.ok || res.status === 401) clRes = 'ok'; // El servidor respon
+      else throw new Error(`Status ${res.status}`);
+    } catch (e) {
+      clRes = 'err';
+      errorMsg += `Cloudinary: ${e.message}. `;
+    }
+
+    setDiagStatus({ firebase: fbRes, cloudinary: clRes, msg: errorMsg || 'Tots els serveis responen correctament! ✅' });
+    setIsCheckingDiag(false);
   };
 
   const generateSlug = (title) => {
@@ -147,7 +185,7 @@ export default function Dashboard() {
     if (!articleImageFile) return;
     setUploadingArticle(true);
     try {
-      const url = await withTimeout(uploadToCloudinary(articleImageFile));
+      const url = await withTimeout(uploadToCloudinary(articleImageFile), 20000, "pujada d'imatge d'article");
       if (url) {
         setFormData(prev => ({ ...prev, imageUrl: url }));
         setArticleImageFile(null);
@@ -201,7 +239,7 @@ export default function Dashboard() {
         else await createPost(postPayload);
         await loadPosts();
       };
-      await withTimeout(process());
+      await withTimeout(process(), 20000, "guardar l'article");
       setView('list');
       alert("Article guardat correctament! ✨");
     } catch (err) { alert(err.message || "Error al guardar l'article."); }
@@ -235,7 +273,7 @@ export default function Dashboard() {
     if (!videoImageFile) return;
     setUploadingVideo(true);
     try {
-      const url = await withTimeout(uploadToCloudinary(videoImageFile));
+      const url = await withTimeout(uploadToCloudinary(videoImageFile), 20000, "pujada d'imatge de vídeo");
       if (url) {
         setVideoFormData(prev => ({ ...prev, customThumbnailUrl: url }));
         setVideoImageFile(null);
@@ -267,8 +305,7 @@ export default function Dashboard() {
         else await createVideo(payload);
         await loadVideos();
       };
-
-      await withTimeout(process());
+      await withTimeout(process(), 20000, "guardar el vídeo");
       setView('videos');
       alert("Vídeo/Anunci guardat correctament! ✨");
     } catch (err) { alert(err.message || "Error al guardar el vídeo."); }
@@ -305,7 +342,7 @@ export default function Dashboard() {
     if (!pageImageFile) return;
     setUploadingPage(true);
     try {
-      const url = await withTimeout(uploadToCloudinary(pageImageFile));
+      const url = await withTimeout(uploadToCloudinary(pageImageFile), 20000, "pujada d'imatge de pàgina");
       if (url) {
         setPageFormData(prev => ({ ...prev, imageUrl: url }));
         setPageImageFile(null);
@@ -325,7 +362,7 @@ export default function Dashboard() {
         else await createPage(pageFormData);
         await loadPages();
       };
-      await withTimeout(process());
+      await withTimeout(process(), 20000, "guardar la pàgina");
       setView('pages');
       alert("Pàgina guardada correctament! ✨");
     } catch (err) { alert(err.message || "Error al guardar la pàgina."); }
@@ -351,10 +388,59 @@ export default function Dashboard() {
 
   return (
     <div className="layout-container" style={{ padding: '2rem 1rem' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <style>{`
+        input[type="file"] {
+          display: none !important;
+        }
+        .diag-ok { color: #166534; background: #dcfce7; border-color: #16a34a; }
+        .diag-err { color: #991b1b; background: #fee2e2; border-color: #ef4444; }
+      `}</style>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h1 style={{ fontSize: '1.8rem', color: 'var(--primary-dark)', cursor: 'pointer' }} onClick={() => setView('menu')}>Panell de Control</h1>
-        <button onClick={handleLogout} className="btn" style={{ background: 'transparent', border: '1px solid var(--primary-blue)', color: 'var(--primary-blue)', padding: '0.3rem 0.8rem', fontSize: '0.8rem' }}>Sortir</button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button onClick={testConnection} disabled={isCheckingDiag} className="btn" style={{ background: 'var(--gray-200)', color: 'var(--primary-blue)', fontSize: '0.75rem', padding: '0.3rem 0.8rem' }}>
+            {isCheckingDiag ? 'Verificant...' : '🔍 Test Connexió'}
+          </button>
+          <button onClick={handleLogout} className="btn" style={{ background: 'transparent', border: '1px solid var(--primary-blue)', color: 'var(--primary-blue)', padding: '0.3rem 0.8rem', fontSize: '0.8rem' }}>Sortir</button>
+        </div>
       </header>
+
+      {/* RESULTAT DIAGNÒSTIC */}
+      {diagStatus && (
+        <div className={`card ${diagStatus.firebase === 'ok' && diagStatus.cloudinary === 'ok' ? 'diag-ok' : 'diag-err'}`} style={{ padding: '1.2rem', borderRadius: '12px', marginBottom: '1.5rem', border: '2px solid' }}>
+          <h3 style={{ marginTop: 0, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {diagStatus.firebase === 'ok' && diagStatus.cloudinary === 'ok' ? '✅ Connexió Perfecta' : '⚠️ Problemes de Connexió'}
+          </h3>
+          <p style={{ fontSize: '0.95rem', marginBottom: '1rem' }}>{diagStatus.msg}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ padding: '0.7rem', background: 'rgba(255,255,255,0.5)', borderRadius: '8px', textAlign: 'center' }}>
+               <strong>Firebase:</strong> {diagStatus.firebase === 'ok' ? '🟢 OK' : diagStatus.firebase === 'err' ? '🔴 ERROR' : '🟡 ...'}
+            </div>
+            <div style={{ padding: '0.7rem', background: 'rgba(255,255,255,0.5)', borderRadius: '8px', textAlign: 'center' }}>
+               <strong>Cloudinary:</strong> {diagStatus.cloudinary === 'ok' ? '🟢 OK' : diagStatus.cloudinary === 'err' ? '🔴 ERROR' : '🟡 ...'}
+            </div>
+          </div>
+          {diagStatus.firebase === 'err' && <p style={{ fontSize: '0.8rem', marginTop: '1rem', color: '#7f1d1d' }}>💡 *Consell: Revisa que la teva IP estigui permesa a Firebase o que les claus a Vercel siguin correctes.*</p>}
+        </div>
+      )}
+
+      {/* VERIFICACIÓ DE CLAUS */}
+      {(() => {
+        const missingKeys = [];
+        if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) missingKeys.push("Firebase API Key");
+        if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) missingKeys.push("Cloudinary Cloud Name");
+        if (!process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET) missingKeys.push("Cloudinary Upload Preset");
+        
+        if (missingKeys.length > 0) {
+          return (
+            <div style={{ padding: '1rem', background: '#fee2e2', border: '1px solid #ef4444', borderRadius: '8px', marginBottom: '2rem', color: '#b91c1c' }}>
+              <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>⚠️ Atenció: Falten claus de configuració!</p>
+              <p style={{ fontSize: '0.9rem' }}>Les següents dades no estan configurades a Vercel/entorn: <strong>{missingKeys.join(", ")}</strong>. Algunes funcions (pujada de fotos o base de dades) podrien fallar.</p>
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       {view === 'menu' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
@@ -386,11 +472,16 @@ export default function Dashboard() {
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <h2>Articles Publicats</h2>
-            <div style={{ padding: '1rem', background: 'var(--primary-light)', borderRadius: '12px', border: '1px solid var(--primary-blue)' }}>
-               <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem' }}>📂 Importar des de PDF/DOC:</label>
-               <input type="file" accept=".pdf,.doc,.docx" onChange={handleDocUpload} style={{ fontSize: '0.8rem' }} />
-               {isExtracting && <p style={{ color: 'var(--primary-blue)', fontSize: '0.75rem', marginTop: '0.3rem' }}>Llegint dades...</p>}
-            </div>
+              <div style={{ padding: '1rem', background: 'var(--primary-light)', borderRadius: '12px', border: '1px solid var(--primary-blue)' }}>
+                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem' }}>📂 Importar des de PDF/DOC:</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                   <label className="btn" style={{ background: 'var(--primary-blue)', fontSize: '0.75rem', padding: '0.4rem 0.8rem', cursor: 'pointer' }}>
+                     Triar Document
+                     <input type="file" accept=".pdf,.doc,.docx" onChange={handleDocUpload} style={{ display: 'none' }} />
+                   </label>
+                   {isExtracting && <p style={{ color: 'var(--primary-blue)', fontSize: '0.75rem' }}>Llegint dades...</p>}
+                </div>
+              </div>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
             <tbody>
@@ -423,7 +514,10 @@ export default function Dashboard() {
                 📂 Importar Contingut (Word o PDF):
              </label>
              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <input type="file" accept=".pdf,.doc,.docx" onChange={handleDocUpload} style={{ fontSize: '0.9rem', flex: 1 }} />
+                <label className="btn" style={{ background: 'var(--primary-blue)', fontSize: '0.9rem', padding: '0.6rem 1.2rem', cursor: 'pointer' }}>
+                  Triar Document
+                  <input type="file" accept=".pdf,.doc,.docx" onChange={handleDocUpload} style={{ display: 'none' }} />
+                </label>
                 {isExtracting && <p style={{ color: 'var(--primary-blue)', fontSize: '0.8rem', fontWeight: 600 }}>⌛ Llegint document...</p>}
              </div>
              <p style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.5rem' }}>Això omplirà automàticament el títol i el cos de l'article.</p>
@@ -434,8 +528,14 @@ export default function Dashboard() {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>
               <label style={{ fontWeight: 600 }}>📷 Pujar Foto a Cloudinary:</label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input type="file" accept="image/*" onChange={e => setArticleImageFile(e.target.files[0])} style={{ flex: 1 }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <label className="btn" style={{ background: 'var(--gray-500)', fontSize: '0.8rem', padding: '0.5rem 1rem', cursor: 'pointer', margin: 0 }}>
+                  Triar Foto
+                  <input type="file" accept="image/*" onChange={e => setArticleImageFile(e.target.files[0])} style={{ display: 'none' }} />
+                </label>
+                <span style={{ fontSize: '0.8rem', color: 'var(--gray-600)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {articleImageFile ? articleImageFile.name : 'Cap fitxer seleccionat'}
+                </span>
                 <button type="button" onClick={handleArticleImageUpload} className="btn" disabled={!articleImageFile || uploadingArticle} style={{ padding: '0.5rem 1rem', background: '#3b82f6', fontSize: '0.9rem' }}>
                   {uploadingArticle ? 'Pujant...' : 'Pujar'}
                 </button>
@@ -463,7 +563,7 @@ export default function Dashboard() {
             
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>
-                {submitLoading ? 'S' + 'incronitzant...' : 'Desar finalment'}
+                {submitLoading ? 'Sincronitzant...' : 'Desar finalment'}
               </button>
               <button type="button" className="btn" onClick={() => setView('list')} style={{ background: 'var(--gray-200)', color: 'black' }}>Cancel·lar</button>
             </div>
@@ -502,8 +602,14 @@ export default function Dashboard() {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>
               <label style={{ fontWeight: 600 }}>📷 Pujar Foto a Cloudinary:</label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input type="file" accept="image/*" onChange={e => setPageImageFile(e.target.files[0])} style={{ flex: 1 }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <label className="btn" style={{ background: 'var(--gray-500)', fontSize: '0.8rem', padding: '0.5rem 1rem', cursor: 'pointer', margin: 0 }}>
+                  Triar Foto
+                  <input type="file" accept="image/*" onChange={e => setPageImageFile(e.target.files[0])} style={{ display: 'none' }} />
+                </label>
+                <span style={{ fontSize: '0.8rem', color: 'var(--gray-600)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {pageImageFile ? pageImageFile.name : 'Cap fitxer seleccionat'}
+                </span>
                 <button type="button" onClick={handlePageImageUpload} className="btn" disabled={!pageImageFile || uploadingPage} style={{ padding: '0.5rem 1rem', background: '#3b82f6', fontSize: '0.9rem' }}>
                   {uploadingPage ? 'Pujant...' : 'Pujar'}
                 </button>
@@ -573,8 +679,14 @@ export default function Dashboard() {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>
               <label style={{ fontWeight: 600 }}>📷 Pujar Foto a Cloudinary:</label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input type="file" accept="image/*" onChange={e => setVideoImageFile(e.target.files[0])} style={{ flex: 1 }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <label className="btn" style={{ background: 'var(--gray-500)', fontSize: '0.8rem', padding: '0.5rem 1rem', cursor: 'pointer', margin: 0 }}>
+                  Triar Foto
+                  <input type="file" accept="image/*" onChange={e => setVideoImageFile(e.target.files[0])} style={{ display: 'none' }} />
+                </label>
+                <span style={{ fontSize: '0.8rem', color: 'var(--gray-600)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {videoImageFile ? videoImageFile.name : 'Cap fitxer seleccionat'}
+                </span>
                 <button type="button" onClick={handleVideoImageUpload} className="btn" disabled={!videoImageFile || uploadingVideo} style={{ padding: '0.5rem 1rem', background: '#3b82f6', fontSize: '0.9rem' }}>
                   {uploadingVideo ? 'Pujant...' : 'Pujar'}
                 </button>
