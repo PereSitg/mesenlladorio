@@ -13,15 +13,21 @@ export async function generateMetadata({ params }) {
     };
   }
   
+  const seoTitle = page.seoTitle || page.title;
+  const seoDescription = page.seoDescription || "Descobreix més sobre " + page.title;
+
   return {
-    title: `${page.title} | Més enllà d'Orió`,
+    title: `${seoTitle} | Més enllà d'Orió`,
+    description: seoDescription,
     robots: {
       index: page.isIndexed !== false,
       follow: true,
     },
     openGraph: {
-      title: page.title,
+      title: seoTitle,
+      description: seoDescription,
       type: 'website',
+      images: [page.imageUrl || "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1200&q=80"]
     }
   };
 }

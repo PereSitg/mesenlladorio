@@ -3,17 +3,23 @@ import { getFeaturedVideo, getAllVideos } from "@/lib/firebase/videos";
 import { getAllPosts } from "@/lib/firebase/posts";
 import YouTubePlayer from "@/components/YouTubePlayer";
 
+import { getHomeSEO } from "@/lib/firebase/settings";
+
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Més enllà d'Orió - Tecnologia, Estafes i Coses Random",
-  description: "Tecnologia, històries increïbles, criptomonedes i curiositats. Parlem de tot allò que ens fascina i ens explota el cap.",
-  openGraph: {
-    title: "Més enllà d'Orió - Tecnologia, Estafes i Coses Random",
-    description: "Tecnologia, històries increïbles, criptomonedes i curiositats. Parlem de tot allò que ens fascina i ens explota el cap.",
-    images: ["https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1200&q=80"],
-  }
-};
+export async function generateMetadata() {
+  const homeSEO = await getHomeSEO();
+  
+  return {
+    title: homeSEO?.title || "Més enllà d'Orió - Tecnologia, Estafes i Coses Random",
+    description: homeSEO?.description || "Tecnologia, històries increïbles, criptomonedes i curiositats.",
+    openGraph: {
+      title: homeSEO?.title,
+      description: homeSEO?.description,
+      images: [homeSEO?.imageUrl || "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1200&q=80"],
+    }
+  };
+}
 
 export default async function Home() {
   const featuredVideo = await getFeaturedVideo();

@@ -6,6 +6,7 @@ import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { getAllPosts, createPost, updatePost, deletePost } from "@/lib/firebase/posts";
 import { getAllVideos, createVideo, updateVideo, deleteVideo } from "@/lib/firebase/videos";
 import { getAllPages, createPage, updatePage, deletePage } from "@/lib/firebase/pages";
+import { getHomeSEO, updateHomeSEO } from '@/lib/firebase/settings';
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import mammoth from "mammoth";
 
@@ -29,7 +30,7 @@ export default function Dashboard() {
   const [contentImageSnippet, setContentImageSnippet] = useState("");
   const [uploadingContentImage, setUploadingContentImage] = useState(false);
   
-  // Vistes: 'menu', 'list', 'form', 'videos', 'video-form', 'pages', 'page-form'
+  // Vistes: 'menu', 'list', 'form', 'videos', 'video-form', 'pages', 'page-form', 'seo-home'
   const [view, setView] = useState('menu'); 
   
   // Articles
@@ -45,8 +46,12 @@ export default function Dashboard() {
     imageUrl: "",
     imageTitle: "",
     imageAlt: "",
-    isIndexed: true
+    isIndexed: true,
+    seoTitle: "",
+    seoDescription: ""
   });
+  const [homeSEO, setHomeSEO] = useState({ title: "", description: "", imageUrl: "" });
+  const [loadingHomeSEO, setLoadingHomeSEO] = useState(false);
   const [articleImageFile, setArticleImageFile] = useState(null);
   const [uploadingArticle, setUploadingArticle] = useState(false);
 
@@ -73,7 +78,11 @@ export default function Dashboard() {
     slug: "",
     content: "",
     imageUrl: "",
-    isIndexed: true
+    imageTitle: "",
+    imageAlt: "",
+    isIndexed: true,
+    seoTitle: "",
+    seoDescription: ""
   });
   const [pageImageFile, setPageImageFile] = useState(null);
   const [uploadingPage, setUploadingPage] = useState(false);
@@ -92,6 +101,7 @@ export default function Dashboard() {
           loadPosts();
           loadVideos();
           loadPages();
+          loadHomeSEO();
         }
       }
       setLoading(false);
@@ -102,6 +112,7 @@ export default function Dashboard() {
   const loadPosts = async () => { setPosts(await getAllPosts()); };
   const loadVideos = async () => { setVideosList(await getAllVideos()); };
   const loadPages = async () => { setPagesList(await getAllPages()); };
+  const loadHomeSEO = async () => { const data = await getHomeSEO(); if (data) setHomeSEO(data); };
 
   const handleLogin = async () => {
     try {
@@ -177,11 +188,24 @@ export default function Dashboard() {
         imageUrl: post.imageUrl,
         imageTitle: post.imageTitle || "",
         imageAlt: post.imageAlt || "",
-        isIndexed: post.isIndexed !== undefined ? post.isIndexed : true
+        isIndexed: post.isIndexed !== undefined ? post.isIndexed : true,
+        seoTitle: post.seoTitle || "",
+        seoDescription: post.seoDescription || ""
       });
     } else {
       setCurrentPost(null);
-      setFormData({ title: "", slug: "", excerpt: "", content: "", imageUrl: "", imageTitle: "", imageAlt: "", isIndexed: true });
+      setFormData({ 
+        title: "", 
+        slug: "", 
+        excerpt: "", 
+        content: "", 
+        imageUrl: "", 
+        imageTitle: "", 
+        imageAlt: "", 
+        isIndexed: true,
+        seoTitle: "",
+        seoDescription: ""
+      });
     }
     setArticleImageFile(null);
     setView('form');
@@ -195,7 +219,6 @@ export default function Dashboard() {
       if (url) {
         setFormData(prev => ({ ...prev, imageUrl: url }));
         setArticleImageFile(file);
-        // alert("Imatge pujada correctament! 📷");
       }
     } catch (err) { alert(err.message || "Error al pujar la imatge."); }
     finally { setUploadingArticle(false); }
@@ -210,7 +233,6 @@ export default function Dashboard() {
       if (url) {
         const snippet = `![Imatge](${url})`;
         setContentImageSnippet(snippet);
-        // alert("Imatge de contingut pujada! Copia el codi.");
       }
     } catch (err) { alert(err.message || "Error al pujar la imatge de contingut."); }
     finally { setUploadingContentImage(false); }
@@ -238,7 +260,7 @@ export default function Dashboard() {
         const titleMatch = text.trim().split("\n")[0];
         setFormData(prev => ({ ...prev, content: text, title: prev.title || titleMatch || "" }));
       }
-      setView('form'); // Obrim el formulari automàticament amb el contingut extret
+      setView('form'); 
     } catch (err) { 
       console.error(err);
       alert("Error al llegir el document."); 
@@ -251,7 +273,6 @@ export default function Dashboard() {
     if (submitLoading) return;
     setSubmitLoading(true);
     try {
-      // Ens assegurem que el slug no estigui buit
       const cleanSlug = formData.slug || generateSlug(formData.title) || `post-${Date.now()}`;
       
       const postPayload = { 
@@ -305,7 +326,6 @@ export default function Dashboard() {
       if (url) {
         setVideoFormData(prev => ({ ...prev, customThumbnailUrl: url }));
         setVideoImageFile(file);
-        // alert("Imatge pujada correctament! 📷");
       }
     } catch (err) { alert(err.message || "Error al pujar la imatge."); }
     finally { setUploadingVideo(false); }
@@ -358,11 +378,15 @@ export default function Dashboard() {
         slug: page.slug,
         content: page.content,
         imageUrl: page.imageUrl || "",
-        isIndexed: page.isIndexed !== undefined ? page.isIndexed : true
+        imageTitle: page.imageTitle || "",
+        imageAlt: page.imageAlt || "",
+        isIndexed: page.isIndexed !== undefined ? page.isIndexed : true,
+        seoTitle: page.seoTitle || "",
+        seoDescription: page.seoDescription || ""
       });
     } else {
       setCurrentPage(null);
-      setPageFormData({ title: "", slug: "", content: "", imageUrl: "", isIndexed: true });
+      setPageFormData({ title: "", slug: "", content: "", imageUrl: "", imageTitle: "", imageAlt: "", isIndexed: true, seoTitle: "", seoDescription: "" });
     }
     setPageImageFile(null);
     setView('page-form');
@@ -376,7 +400,6 @@ export default function Dashboard() {
       if (url) {
         setPageFormData(prev => ({ ...prev, imageUrl: url }));
         setPageImageFile(file);
-        // alert("Imatge pujada correctament! 📷");
       }
     } catch (err) { alert(err.message || "Error al pujar la imatge."); }
     finally { setUploadingPage(false); }
@@ -401,6 +424,39 @@ export default function Dashboard() {
 
   const handleDeletePage = async (id) => {
     if (confirm("Vols esborrar aquesta pàgina?")) { await deletePage(id); loadPages(); }
+  };
+
+  const handlePageSubmit = async (e) => {
+    e.preventDefault();
+    if (submitLoading) return;
+    setSubmitLoading(true);
+    try {
+      const pageData = {
+        ...pageFormData,
+        id: currentPage ? currentPage.id : null,
+        updatedAt: new Date().toISOString()
+      };
+      if (!currentPage) pageData.createdAt = new Date().toISOString();
+      
+      // Fallbacks para SEO
+      if (!pageData.seoTitle) pageData.seoTitle = pageData.title;
+      if (!pageData.seoDescription) pageData.seoDescription = "Descobreix més sobre " + pageData.title;
+
+      await savePage(pageData);
+      loadPages();
+      setView('pages');
+    } catch (err) { alert("Error al desar la pàgina."); }
+    finally { setSubmitLoading(false); }
+  };
+
+  const handleHomeSEOSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingHomeSEO(true);
+    try {
+      await updateHomeSEO(homeSEO);
+      alert("SEO de l'inici actualitzat!");
+    } catch (err) { alert("Error al guardar SEO."); }
+    finally { setLoadingHomeSEO(false); }
   };
 
   if (loading) return <div className="layout-container" style={{ padding: '4rem 1rem', textAlign: 'center' }}>Carregant...</div>;
@@ -428,7 +484,7 @@ export default function Dashboard() {
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <h1 style={{ fontSize: '1.8rem', color: 'var(--primary-dark)', cursor: 'pointer', margin: 0 }} onClick={() => setView('menu')}>Panell de Control</h1>
-           <span style={{ background: '#16a34a', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 }}>v1.2 BARRA DE FORMAT</span>
+           <span style={{ background: '#1d4ed8', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 }}>v1.3 SEO MASTER</span>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button onClick={handleLogout} className="btn" style={{ background: 'transparent', border: '1px solid var(--primary-blue)', color: 'var(--primary-blue)', padding: '0.3rem 0.8rem', fontSize: '0.8rem' }}>Sortir</button>
@@ -457,6 +513,10 @@ export default function Dashboard() {
           <div className="card" onClick={() => setView('videos')} style={{ cursor: 'pointer', textAlign: 'center' }}>
             <span style={{ fontSize: '2.5rem' }}>📺</span>
             <h3>Vídeos ({videosList.length})</h3>
+          </div>
+          <div className="card" onClick={() => setView('seo-home')} style={{ cursor: 'pointer', textAlign: 'center', border: '2px solid var(--primary-blue)', background: '#eff6ff' }}>
+            <span style={{ fontSize: '2.5rem' }}>🔍</span>
+            <h3>SEO Pàgina d&apos;Inici</h3>
           </div>
           <a href="/" target="_blank" className="card" style={{ cursor: 'pointer', textAlign: 'center', textDecoration: 'none', color: 'inherit' }}>
             <span style={{ fontSize: '2.5rem' }}>🚀</span>
@@ -579,6 +639,36 @@ export default function Dashboard() {
               onChange={e => setFormData({...formData, excerpt: e.target.value})} 
               style={{ padding: '0.8rem', minHeight: '80px', borderRadius: '8px' }} 
             />
+
+            {/* SECCIÓ SEO AVANÇAT - GOOGLE PREVIEW */}
+            <div style={{ padding: '1.5rem', background: '#f0f9ff', borderRadius: '12px', border: '1px solid #7dd3fc', margin: '0.5rem 0' }}>
+               <h4 style={{ margin: '0 0 1rem 0', color: '#0369a1', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>🔍 Control de SEO (Google)</h4>
+               
+               <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                  <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Previsualització del resultat:</p>
+                  <div style={{ fontSize: '18px', color: '#1a0dab', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {formData.seoTitle || formData.title || "El títol sortirà aquí..."}
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#006621', marginBottom: '4px' }}>
+                    mesenlladorio.vercel.app › blog › {formData.slug || "el-teu-article"}
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#545454', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.4' }}>
+                    <span style={{ color: '#70757a' }}>{new Date().toLocaleDateString('ca-ES')} — </span>
+                    {formData.seoDescription || formData.excerpt || "Escriu una descripció específica per atraure clics a Google..."}
+                  </div>
+               </div>
+
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0369a1' }}>Títol Personalitzat Google:</label>
+                    <input type="text" placeholder="Sobreescriu el títol de l'article" value={formData.seoTitle} onChange={e => setFormData({...formData, seoTitle: e.target.value})} style={{ padding: '0.7rem', borderRadius: '8px', border: '1px solid #7dd3fc' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    <label style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0369a1' }}>Descripció Personalitzada Google:</label>
+                    <textarea placeholder="Descripció atractiva per a cercadors..." value={formData.seoDescription} onChange={e => setFormData({...formData, seoDescription: e.target.value})} style={{ padding: '0.7rem', borderRadius: '8px', border: '1px solid #7dd3fc', minHeight: '60px' }} />
+                  </div>
+               </div>
+            </div>
 
              {/* BARRA D'EINES DE FORMAT - Ara més separada i visible */}
              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', background: '#f1f5f9', padding: '0.8rem', borderRadius: '12px 12px 0 0', border: '2px solid var(--primary-blue)', borderBottom: 'none', marginTop: '1rem' }}>
@@ -721,9 +811,25 @@ export default function Dashboard() {
                 <input type="checkbox" id="isIndexedPage" checked={pageFormData.isIndexed} onChange={e => setPageFormData({...pageFormData, isIndexed: e.target.checked})} style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }} />
                 <label htmlFor="isIndexedPage" style={{ fontWeight: 600, cursor: 'pointer' }}>Indexar a Google i apareixer a l'índex web</label>
               </div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.5rem', paddingLeft: '2rem' }}>
-                Si està marcat, la pàgina serà visible per cercadors i s'afegirà a l'índex de continguts.
-              </p>
+
+               {/* GOOGLE PREVIEW PER PÀGINES */}
+               <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                  <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Previsualització Google:</p>
+                  <div style={{ fontSize: '18px', color: '#1a0dab', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {pageFormData.seoTitle || pageFormData.title || "Títol de la pàgina..."}
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#006621', marginBottom: '4px' }}>
+                    mesenlladorio.vercel.app › {pageFormData.slug || "la-teva-pagina"}
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#545454' }}>
+                    {pageFormData.seoDescription || "Descripció especial per a aquesta pàgina..."}
+                  </div>
+               </div>
+               
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+                  <input type="text" placeholder="Títol SEO Google" value={pageFormData.seoTitle} onChange={e => setPageFormData({...pageFormData, seoTitle: e.target.value})} style={{ padding: '0.7rem', borderRadius: '8px', border: '1px solid #7dd3fc' }} />
+                  <textarea placeholder="Descripció SEO Google" value={pageFormData.seoDescription} onChange={e => setPageFormData({...pageFormData, seoDescription: e.target.value})} style={{ padding: '0.7rem', borderRadius: '8px', border: '1px solid #7dd3fc', minHeight: '60px' }} />
+               </div>
             </div>
             <textarea placeholder="Contingut (Markdown)" value={pageFormData.content} onChange={e => setPageFormData({...pageFormData, content: e.target.value})} required style={{ padding: '0.8rem', minHeight: '400px' }} />
             <div style={{ display: 'flex', gap: '1rem' }}>
@@ -820,6 +926,59 @@ export default function Dashboard() {
               <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>{submitLoading ? 'Sincronitzant...' : 'Desar'}</button>
               <button type="button" className="btn" onClick={() => setView('videos')} style={{ background: 'var(--gray-200)', color: 'black' }}>Cancel·lar</button>
             </div>
+          </form>
+        </div>
+      )}
+      {/* SEO HOME EDITOR */}
+      {view === 'seo-home' && (
+        <div className="card" style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <header style={{ marginBottom: '2rem', borderBottom: '2px solid var(--primary-blue)', paddingBottom: '0.5rem' }}>
+             <h2 style={{ margin: 0 }}>SEO Pàgina d&apos;Inici</h2>
+             <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem' }}>Configuració global de com es veu la teva web a Google.</p>
+          </header>
+
+          <form onSubmit={handleHomeSEOSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+             {/* PREVISUALITZACIÓ GOOGLE HOME */}
+             <div style={{ padding: '1.5rem', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.8rem' }}>Així es veurà a Google:</p>
+                <div style={{ fontSize: '20px', color: '#1a0dab', marginBottom: '4px' }}>
+                  {homeSEO.title || "Títol del lloc..."}
+                </div>
+                <div style={{ fontSize: '14px', color: '#006621', marginBottom: '4px' }}>
+                  https://mesenlladorio.vercel.app
+                </div>
+                <div style={{ fontSize: '14px', color: '#545454', lineHeight: '1.5' }}>
+                  {homeSEO.description || "Descripció global de la teva web..."}
+                </div>
+             </div>
+
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+               <label style={{ fontWeight: 700 }}>Títol Global (Inici):</label>
+               <input 
+                 type="text" 
+                 value={homeSEO.title} 
+                 onChange={e => setHomeSEO({...homeSEO, title: e.target.value})} 
+                 placeholder="Més enllà d'Orió - ..."
+                 style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', fontSize: '1.1rem' }} 
+               />
+             </div>
+
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+               <label style={{ fontWeight: 700 }}>Descripció Global (Inici):</label>
+               <textarea 
+                 value={homeSEO.description} 
+                 onChange={e => setHomeSEO({...homeSEO, description: e.target.value})} 
+                 placeholder="Explica de què va la teva web..."
+                 style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', minHeight: '120px' }} 
+               />
+             </div>
+
+             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button type="submit" className="btn" disabled={loadingHomeSEO} style={{ flex: 1, padding: '1rem' }}>
+                  {loadingHomeSEO ? 'Guardant...' : 'Desar Configuració SEO'}
+                </button>
+                <button type="button" className="btn" onClick={() => setView('menu')} style={{ background: 'var(--gray-200)', color: 'black' }}>Tornar</button>
+             </div>
           </form>
         </div>
       )}
