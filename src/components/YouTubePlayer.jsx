@@ -94,14 +94,14 @@ export default function YouTubePlayer({ videoId, title, isFeatured = false, cust
         bottom: 0, 
         left: 0, 
         right: 0, 
-        padding: isFeatured ? '2rem' : '1.5rem', 
-        background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+        padding: isFeatured ? '1.5rem' : '1rem', 
+        background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)',
         color: 'white'
       }}>
-        <p style={{ margin: 0, fontSize: isFeatured ? '0.9rem' : '0.8rem', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        <p style={{ margin: 0, fontSize: isFeatured ? '0.8rem' : '0.7rem', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 600 }}>
           {isAnnouncement ? 'Pròxim Vídeo' : `Vídeo ${isFeatured ? 'Destacat' : ''}`}
         </p>
-        <h3 style={{ margin: '0.2rem 0 0', fontSize: isFeatured ? '1.5rem' : '1.1rem', fontWeight: 700 }}>{title}</h3>
+        <h3 style={{ margin: '0.2rem 0 0', fontSize: isFeatured ? '1.3rem' : '1rem', fontWeight: 700, lineHeight: 1.2 }}>{title}</h3>
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `

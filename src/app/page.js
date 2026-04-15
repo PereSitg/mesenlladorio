@@ -22,22 +22,22 @@ export default async function Home() {
   const homeVideos = allVideos.filter(v => v.showOnHome);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '5rem', paddingBottom: '3rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem', paddingBottom: '3rem' }}>
       {/* Hero Section */}
       <section style={{ 
         position: 'relative', 
-        padding: '6rem 3rem', 
-        borderRadius: '24px', 
+        padding: '4rem 2.5rem', 
+        borderRadius: '32px', 
         background: 'linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%)',
         color: 'white',
         overflow: 'hidden',
-        boxShadow: '0 25px 50px -12px rgba(27, 79, 114, 0.4)'
+        boxShadow: '0 20px 40px -10px rgba(27, 79, 114, 0.4)'
       }}>
         <div style={{ position: 'relative', zIndex: 10, maxWidth: '800px' }}>
-          <h1 style={{ fontSize: '4rem', fontWeight: 800, lineHeight: 1.1, marginBottom: '1.5rem', letterSpacing: '-0.03em' }}>
+          <h1 style={{ fontSize: '3.2rem', fontWeight: 800, lineHeight: 1.1, marginBottom: '1.2rem', letterSpacing: '-0.03em' }}>
             Tecnologia, xarxes socials, notícies <br /> i coses random
           </h1>
-          <p style={{ fontSize: '1.35rem', opacity: 0.9, marginBottom: '3rem', maxWidth: '650px', lineHeight: 1.6, fontWeight: 300 }}>
+          <p style={{ fontSize: '1.15rem', opacity: 0.9, marginBottom: '2.5rem', maxWidth: '600px', lineHeight: 1.6, fontWeight: 300 }}>
             Benvingut a <strong>Més enllà d&apos;Orió</strong>. Històries de fraus, criptomonedes, reflexions sobre el futur de la tecnologia i casos totalment <i>random</i> que et faran explotar el cap.
           </p>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
@@ -54,7 +54,7 @@ export default async function Home() {
       
       {/* Featured Video Player - NOMÉS SI EXISTEIX */}
       {featuredVideo && (
-        <section style={{ maxWidth: '950px', margin: '0 auto', width: '100%' }}>
+        <section style={{ maxWidth: '820px', margin: '0 auto', width: '100%' }}>
           <YouTubePlayer 
             videoId={featuredVideo.videoId} 
             title={featuredVideo.title} 
@@ -66,12 +66,12 @@ export default async function Home() {
 
       {/* Videos Section - NOMÉS SI N'HI HA MARCATS PER AL HOME */}
       {homeVideos.length > 0 && (
-        <section style={{ background: 'var(--gray-50)', padding: '5rem 2rem', borderRadius: '32px', margin: '0 -1rem' }}>
+        <section style={{ background: 'var(--gray-50)', padding: '4rem 2rem', borderRadius: '40px', margin: '0 -1rem' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', flexWrap: 'wrap', gap: '1.5rem' }}>
               <div>
-                <h2 style={{ fontSize: '3rem', color: 'var(--primary-dark)', fontWeight: 800, marginBottom: '0.5rem', letterSpacing: '-0.03em' }}>Últims vídeos i novetats</h2>
-                <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '1.2rem' }}>No et perdis el contingut més recent i les nostres properes estrenes.</p>
+                <h2 style={{ fontSize: '2.5rem', color: 'var(--primary-dark)', fontWeight: 800, marginBottom: '0.5rem', letterSpacing: '-0.03em' }}>Últims vídeos i novetats</h2>
+                <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '1.1rem' }}>No et perdis el contingut més recent i les nostres properes estrenes.</p>
               </div>
               <Link href="/youtube" className="btn" style={{ background: 'transparent', color: 'var(--primary-blue)', border: '2px solid var(--primary-blue)', fontWeight: 600, padding: '0.8rem 1.5rem', borderRadius: '12px' }}>Veure tots &rarr;</Link>
             </div>
