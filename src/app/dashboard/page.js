@@ -376,7 +376,10 @@ export default function Dashboard() {
         .diag-err { color: #991b1b; background: #fee2e2; border-color: #ef4444; }
       `}</style>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h1 style={{ fontSize: '1.8rem', color: 'var(--primary-dark)', cursor: 'pointer' }} onClick={() => setView('menu')}>Panell de Control</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <h1 style={{ fontSize: '1.8rem', color: 'var(--primary-dark)', cursor: 'pointer', margin: 0 }} onClick={() => setView('menu')}>Panell de Control</h1>
+          <span style={{ background: 'var(--primary-blue)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 }}>v1.1 ACTUALITZAT</span>
+        </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button onClick={handleLogout} className="btn" style={{ background: 'transparent', border: '1px solid var(--primary-blue)', color: 'var(--primary-blue)', padding: '0.3rem 0.8rem', fontSize: '0.8rem' }}>Sortir</button>
         </div>
@@ -405,6 +408,11 @@ export default function Dashboard() {
             <span style={{ fontSize: '2.5rem' }}>📺</span>
             <h3>Vídeos ({videosList.length})</h3>
           </div>
+          <a href="/index" target="_blank" className="card" style={{ cursor: 'pointer', textAlign: 'center', textDecoration: 'none', color: 'inherit' }}>
+            <span style={{ fontSize: '2.5rem' }}>🔍</span>
+            <h3>Veure Índex Públic</h3>
+            <p style={{ fontSize: '0.7rem', color: 'var(--gray-500)' }}>Obre en nova pestanya</p>
+          </a>
         </div>
       )}
 
