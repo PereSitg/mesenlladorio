@@ -35,6 +35,7 @@ export const getAllPosts = async () => {
       return {
         id: doc.id,
         ...data,
+        slug: data.slug || doc.id, // Fallback si no hi ha slug
         createdAt: dateStr
       };
     });

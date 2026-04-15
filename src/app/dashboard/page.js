@@ -158,8 +158,17 @@ export default function Dashboard() {
     setIsCheckingDiag(false);
   };
 
-  const generateSlug = (title) => {
-    return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+  const generateSlug = (text) => {
+    if (!text) return "";
+    return text
+      .toString()
+      .normalize('NFD')                   // Descompon caràcters amb accents (ex: à -> a + `)
+      .replace(/[\u0300-\u036f]/g, '')     // Elimina els accents
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')                // Espais per guions
+      .replace(/[^\w-]+/g, '')             // Elimina caràcters especials
+      .replace(/--+/g, '-');               // Elimina guions dobles
   };
 
   // --- ARTICLES ---
@@ -184,15 +193,15 @@ export default function Dashboard() {
     setView('form');
   };
 
-  const handleArticleImageUpload = async () => {
-    if (!articleImageFile) return;
+  const handleArticleImageUpload = async (file) => {
+    if (!file) return;
     setUploadingArticle(true);
     try {
-      const url = await withTimeout(uploadToCloudinary(articleImageFile), 20000, "pujada d'imatge d'article");
+      const url = await withTimeout(uploadToCloudinary(file), 20000, "pujada d'imatge d'article");
       if (url) {
         setFormData(prev => ({ ...prev, imageUrl: url }));
-        setArticleImageFile(null);
-        alert("Imatge pujada a Cloudinary! 📷");
+        setArticleImageFile(file);
+        // alert("Imatge pujada correctament! 📷");
       }
     } catch (err) { alert(err.message || "Error al pujar la imatge."); }
     finally { setUploadingArticle(false); }
@@ -233,10 +242,15 @@ export default function Dashboard() {
     if (submitLoading) return;
     setSubmitLoading(true);
     try {
+      // Ens assegurem que el slug no estigui buit
+      const cleanSlug = formData.slug || generateSlug(formData.title) || `post-${Date.now()}`;
+      
       const postPayload = { 
         ...formData, 
+        slug: cleanSlug,
         createdAt: currentPost ? currentPost.createdAt : new Date().toISOString() 
       };
+      
       const process = async () => {
         if (currentPost) await updatePost(currentPost.id, postPayload);
         else await createPost(postPayload);
@@ -272,15 +286,15 @@ export default function Dashboard() {
     setView('video-form');
   };
 
-  const handleVideoImageUpload = async () => {
-    if (!videoImageFile) return;
+  const handleVideoImageUpload = async (file) => {
+    if (!file) return;
     setUploadingVideo(true);
     try {
-      const url = await withTimeout(uploadToCloudinary(videoImageFile), 20000, "pujada d'imatge de vídeo");
+      const url = await withTimeout(uploadToCloudinary(file), 20000, "pujada d'imatge de vídeo");
       if (url) {
         setVideoFormData(prev => ({ ...prev, customThumbnailUrl: url }));
-        setVideoImageFile(null);
-        alert("Imatge pujada a Cloudinary! 📷");
+        setVideoImageFile(file);
+        // alert("Imatge pujada correctament! 📷");
       }
     } catch (err) { alert(err.message || "Error al pujar la imatge."); }
     finally { setUploadingVideo(false); }
@@ -341,15 +355,15 @@ export default function Dashboard() {
     setView('page-form');
   };
 
-  const handlePageImageUpload = async () => {
-    if (!pageImageFile) return;
+  const handlePageImageUpload = async (file) => {
+    if (!file) return;
     setUploadingPage(true);
     try {
-      const url = await withTimeout(uploadToCloudinary(pageImageFile), 20000, "pujada d'imatge de pàgina");
+      const url = await withTimeout(uploadToCloudinary(file), 20000, "pujada d'imatge de pàgina");
       if (url) {
         setPageFormData(prev => ({ ...prev, imageUrl: url }));
-        setPageImageFile(null);
-        alert("Imatge pujada a Cloudinary! 📷");
+        setPageImageFile(file);
+        // alert("Imatge pujada correctament! 📷");
       }
     } catch (err) { alert(err.message || "Error al pujar la imatge."); }
     finally { setUploadingPage(false); }
@@ -538,18 +552,21 @@ export default function Dashboard() {
             <input type="text" placeholder="Títol" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value, slug: generateSlug(e.target.value)})} required style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)' }} />
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>
-              <label style={{ fontWeight: 600 }}>📷 Pujar Foto a Cloudinary:</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <label className="btn" style={{ background: 'var(--primary-blue)', color: 'white', fontSize: '0.8rem', padding: '0.5rem 1rem', cursor: 'pointer', margin: 0 }}>
-                  Triar Foto
-                  <input type="file" accept="image/*" onChange={e => setArticleImageFile(e.target.files[0])} style={{ display: 'none' }} />
+              <label style={{ fontWeight: 600 }}>📷 Foto del capçalera:</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <label className="btn" style={{ background: uploadingArticle ? 'var(--gray-300)' : 'var(--primary-blue)', color: 'white', fontSize: '0.8rem', padding: '0.6rem 1.2rem', cursor: uploadingArticle ? 'default' : 'pointer', margin: 0 }}>
+                  {uploadingArticle ? 'Pujant...' : 'Triar Foto'}
+                  <input type="file" accept="image/*" onChange={e => handleArticleImageUpload(e.target.files[0])} disabled={uploadingArticle} style={{ display: 'none' }} />
                 </label>
-                <span style={{ fontSize: '0.8rem', color: 'var(--gray-600)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {articleImageFile ? articleImageFile.name : 'Cap fitxer seleccionat'}
-                </span>
-                <button type="button" onClick={handleArticleImageUpload} className="btn" disabled={!articleImageFile || uploadingArticle} style={{ padding: '0.5rem 1rem', background: '#3b82f6', fontSize: '0.9rem' }}>
-                  {uploadingArticle ? 'Pujant...' : 'Pujar'}
-                </button>
+                
+                {formData.imageUrl && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'white', padding: '0.3rem 0.6rem', borderRadius: '6px', border: '1px solid var(--gray-200)' }}>
+                    <img src={formData.imageUrl} alt="Preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                    <span style={{ fontSize: '0.75rem', color: '#166534', fontWeight: 600 }}>✅ Foto activa</span>
+                  </div>
+                )}
+                
+                {uploadingArticle && <span style={{ fontSize: '0.8rem', color: 'var(--primary-blue)', fontWeight: 600 }}>⌛ S'està pujant a Cloudinary...</span>}
               </div>
             </div>
 
@@ -631,18 +648,19 @@ export default function Dashboard() {
             <input type="text" placeholder="URL-slug" value={pageFormData.slug} onChange={e => setPageFormData({...pageFormData, slug: e.target.value})} required style={{ padding: '0.8rem' }} />
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>
-              <label style={{ fontWeight: 600 }}>📷 Pujar Foto a Cloudinary:</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <label className="btn" style={{ background: 'var(--gray-500)', fontSize: '0.8rem', padding: '0.5rem 1rem', cursor: 'pointer', margin: 0 }}>
-                  Triar Foto
-                  <input type="file" accept="image/*" onChange={e => setPageImageFile(e.target.files[0])} style={{ display: 'none' }} />
+              <label style={{ fontWeight: 600 }}>📷 Foto de la Pàgina:</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <label className="btn" style={{ background: uploadingPage ? 'var(--gray-300)' : 'var(--primary-blue)', color: 'white', fontSize: '0.8rem', padding: '0.6rem 1.2rem', cursor: uploadingPage ? 'default' : 'pointer', margin: 0 }}>
+                  {uploadingPage ? 'Pujant...' : 'Triar Foto'}
+                  <input type="file" accept="image/*" onChange={e => handlePageImageUpload(e.target.files[0])} disabled={uploadingPage} style={{ display: 'none' }} />
                 </label>
-                <span style={{ fontSize: '0.8rem', color: 'var(--gray-600)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {pageImageFile ? pageImageFile.name : 'Cap fitxer seleccionat'}
-                </span>
-                <button type="button" onClick={handlePageImageUpload} className="btn" disabled={!pageImageFile || uploadingPage} style={{ padding: '0.5rem 1rem', background: '#3b82f6', fontSize: '0.9rem' }}>
-                  {uploadingPage ? 'Pujant...' : 'Pujar'}
-                </button>
+                
+                {pageFormData.imageUrl && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'white', padding: '0.3rem 0.6rem', borderRadius: '6px', border: '1px solid var(--gray-200)' }}>
+                    <img src={pageFormData.imageUrl} alt="Preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                    <span style={{ fontSize: '0.75rem', color: '#166534', fontWeight: 600 }}>✅ Foto activa</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -708,18 +726,19 @@ export default function Dashboard() {
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: '#f1f5f9', borderRadius: '8px' }}>
-              <label style={{ fontWeight: 600 }}>📷 Pujar Foto a Cloudinary:</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <label className="btn" style={{ background: 'var(--gray-500)', fontSize: '0.8rem', padding: '0.5rem 1rem', cursor: 'pointer', margin: 0 }}>
-                  Triar Foto
-                  <input type="file" accept="image/*" onChange={e => setVideoImageFile(e.target.files[0])} style={{ display: 'none' }} />
+              <label style={{ fontWeight: 600 }}>📷 Foto del Vídeo/Anunci:</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <label className="btn" style={{ background: uploadingVideo ? 'var(--gray-300)' : 'var(--primary-blue)', color: 'white', fontSize: '0.8rem', padding: '0.6rem 1.2rem', cursor: uploadingVideo ? 'default' : 'pointer', margin: 0 }}>
+                  {uploadingVideo ? 'Pujant...' : 'Triar Foto'}
+                  <input type="file" accept="image/*" onChange={e => handleVideoImageUpload(e.target.files[0])} disabled={uploadingVideo} style={{ display: 'none' }} />
                 </label>
-                <span style={{ fontSize: '0.8rem', color: 'var(--gray-600)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {videoImageFile ? videoImageFile.name : 'Cap fitxer seleccionat'}
-                </span>
-                <button type="button" onClick={handleVideoImageUpload} className="btn" disabled={!videoImageFile || uploadingVideo} style={{ padding: '0.5rem 1rem', background: '#3b82f6', fontSize: '0.9rem' }}>
-                  {uploadingVideo ? 'Pujant...' : 'Pujar'}
-                </button>
+                
+                {videoFormData.customThumbnailUrl && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'white', padding: '0.3rem 0.6rem', borderRadius: '6px', border: '1px solid var(--gray-200)' }}>
+                    <img src={videoFormData.customThumbnailUrl} alt="Preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                    <span style={{ fontSize: '0.75rem', color: '#166534', fontWeight: 600 }}>✅ Foto activa</span>
+                  </div>
+                )}
               </div>
             </div>
 
