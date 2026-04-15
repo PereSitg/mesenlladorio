@@ -7,7 +7,7 @@ export default function Navbar() {
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
       color: 'white', 
-      padding: '1.2rem 0',
+      padding: '1.5rem 0',
       boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
       position: 'fixed',
       top: 0,
