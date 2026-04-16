@@ -426,28 +426,7 @@ export default function Dashboard() {
     if (confirm("Vols esborrar aquesta pàgina?")) { await deletePage(id); loadPages(); }
   };
 
-  const handlePageSubmit = async (e) => {
-    e.preventDefault();
-    if (submitLoading) return;
-    setSubmitLoading(true);
-    try {
-      const pageData = {
-        ...pageFormData,
-        id: currentPage ? currentPage.id : null,
-        updatedAt: new Date().toISOString()
-      };
-      if (!currentPage) pageData.createdAt = new Date().toISOString();
-      
-      // Fallbacks para SEO
-      if (!pageData.seoTitle) pageData.seoTitle = pageData.title;
-      if (!pageData.seoDescription) pageData.seoDescription = "Descobreix més sobre " + pageData.title;
 
-      await savePage(pageData);
-      loadPages();
-      setView('pages');
-    } catch (err) { alert("Error al desar la pàgina."); }
-    finally { setSubmitLoading(false); }
-  };
 
   const handleHomeSEOSubmit = async (e) => {
     e.preventDefault();
