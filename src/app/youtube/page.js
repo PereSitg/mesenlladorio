@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getAllVideos } from "@/lib/firebase/videos";
 import YouTubePlayer from "@/components/YouTubePlayer";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Canal de YouTube - Més enllà d'Orió",
   description: "Explora tots els vídeos del nostre canal de YouTube sobre tecnologia, estafes i curiositats.",

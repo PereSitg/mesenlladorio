@@ -3,6 +3,8 @@ import { getPageBySlug } from '@/lib/firebase/pages';
 import { notFound } from 'next/navigation';
 import ShareButtons from '@/components/ShareButtons';
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const page = await getPageBySlug(slug);
