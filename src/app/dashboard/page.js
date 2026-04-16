@@ -161,12 +161,10 @@ export default function Dashboard() {
     
     const newContent = `${before}${prefix}${selectedText}${suffix}${after}`;
     
-    // Actualitzem l'estat del contingut i del resum automàtic
-    const words = newContent.trim().split(/\s+/).slice(0, 20).join(" ");
+    // Actualitzem l'estat del contingut
     setFormData({
       ...formData,
-      content: newContent,
-      excerpt: words + (newContent.split(/\s+/).length > 20 ? "..." : "")
+      content: newContent
     });
 
     // Restaurar el focus i la selecció
@@ -275,8 +273,12 @@ export default function Dashboard() {
     try {
       const cleanSlug = formData.slug || generateSlug(formData.title) || `post-${Date.now()}`;
       
+      // Generem el resum automàticament si no en tenim cap de guardat (o per assegurar sincronia)
+      const autoExcerpt = formData.content.trim().split(/\s+/).slice(0, 25).join(" ") + "...";
+
       const postPayload = { 
         ...formData, 
+        excerpt: formData.excerpt || autoExcerpt, // Respectem el que ja hi hagi o generem nou
         slug: cleanSlug,
         createdAt: currentPost ? currentPost.createdAt : new Date().toISOString() 
       };
@@ -612,12 +614,7 @@ export default function Dashboard() {
                   )}
                </div>
             </div>
-            <textarea 
-              placeholder="Resum (S'omple sol si no escrius res)" 
-              value={formData.excerpt} 
-              onChange={e => setFormData({...formData, excerpt: e.target.value})} 
-              style={{ padding: '0.8rem', minHeight: '80px', borderRadius: '8px' }} 
-            />
+            {/* El camp 'Resum' s'ha eliminat per evitar duplicats amb el camp SEO de sota */}
 
             {/* SECCIÓ SEO AVANÇAT - GOOGLE PREVIEW */}
             <div style={{ padding: '1.5rem', background: '#f0f9ff', borderRadius: '12px', border: '1px solid #7dd3fc', margin: '0.5rem 0' }}>
@@ -683,12 +680,9 @@ export default function Dashboard() {
               placeholder="Contingut (Markdown)" 
               value={formData.content} 
               onChange={e => {
-                const newContent = e.target.value;
-                const words = newContent.trim().split(/\s+/).slice(0, 20).join(" ");
                 setFormData({
                   ...formData, 
-                  content: newContent,
-                  excerpt: words + (newContent.split(/\s+/).length > 20 ? "..." : "")
+                  content: e.target.value
                 });
               }} 
               required 
