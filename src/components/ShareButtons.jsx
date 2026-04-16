@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 
 export default function ShareButtons({ url, title, excerpt }) {
+  const [shareUrl, setShareUrl] = useState("");
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
