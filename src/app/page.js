@@ -33,7 +33,7 @@ export default async function Home() {
   const latestPosts = allPosts.slice(0, 3);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '4.5rem', paddingBottom: '3rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', paddingBottom: '3rem' }}>
       {/* Hero Section */}
       <section style={{ 
         position: 'relative', 
@@ -78,7 +78,7 @@ export default async function Home() {
 
       {/* Videos Section - NOMÉS SI N'HI HA MARCATS PER AL HOME */}
       {homeVideos.length > 0 && (
-        <section style={{ background: 'var(--gray-50)', padding: '5rem 2rem', borderRadius: '40px', margin: '0 -1rem' }}>
+        <section style={{ background: 'var(--gray-50)', padding: '3.5rem 2rem', borderRadius: '40px', margin: '0 -1rem' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
               <h2 style={{ fontSize: '2.5rem', color: 'var(--primary-dark)', fontWeight: 800, marginBottom: '0.8rem', letterSpacing: '-0.03em' }}>Últims vídeos</h2>
@@ -150,8 +150,8 @@ export default async function Home() {
       )}
 
       {/* Blog Section - SEMPRE VISIBLE PERQUÈ ES VEGI L'ESTRUCTURA */}
-      <section style={{ padding: '2rem 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
+      <section style={{ padding: '0.5rem 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h2 style={{ fontSize: '3rem', color: 'var(--primary-dark)', fontWeight: 800, marginBottom: '0.5rem', letterSpacing: '-0.03em' }}>Els nostres escrits</h2>
             <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '1.2rem' }}>Articles d&apos;opinió, anàlisi i curiositats.</p>
