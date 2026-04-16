@@ -38,7 +38,7 @@ export default async function BlogIndex() {
                   <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--foreground)', lineHeight: 1.3 }}>{post.title}</h2>
                   <p style={{ color: 'rgba(0,0,0,0.7)', lineHeight: 1.6, marginBottom: '1.5rem', flex: 1 }}>{post.excerpt}</p>
                   <div style={{ fontWeight: 600, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    Llegir article completa <span style={{fontSize: '1.2rem'}}>&rarr;</span>
+                    Llegir article complet <span style={{fontSize: '1.2rem'}}>&rarr;</span>
                   </div>
                </div>
             </Link>
