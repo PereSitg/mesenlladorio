@@ -18,18 +18,19 @@ export default function Navbar() {
       borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
     }}>
       <div className="layout-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link href="/" style={{ fontSize: '1.5rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span>Més enllà d&apos;Orió</span>
+        <Link href="/" className="nav-logo-container">
+          <span className="nav-text-logo">Més enllà d&apos;Orió</span>
+          <img src="/logo_owl.png" alt="Logo" className="nav-image-logo" />
         </Link>
-        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-          <nav style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }} className="nav-links-wrapper">
+          <nav className="main-nav">
             <Link href="/" style={{ fontWeight: 500 }}>Inici</Link>
             <Link href="/blog" style={{ fontWeight: 500 }}>Blog</Link>
             <Link href="/youtube" style={{ fontWeight: 500 }}>YouTube</Link>
             <Link href="/about" style={{ fontWeight: 500 }}>Sobre nosaltres</Link>
           </nav>
           
-          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', marginLeft: '0.5rem', paddingLeft: '1rem', borderLeft: '1px solid rgba(255,255,255,0.2)' }}>
+          <div className="social-links-nav">
             <a href="https://www.youtube.com/channel/UCxhIYuLtgo_apR3rzl82flA" target="_blank" rel="noopener noreferrer" className="social-icon-nav" aria-label="YouTube">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
             </a>
@@ -45,6 +46,35 @@ export default function Navbar() {
           </div>
         </div>
         <style dangerouslySetInnerHTML={{__html: `
+          .nav-logo-container {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+          }
+          .nav-image-logo {
+            display: none;
+            height: 45px;
+            width: auto;
+          }
+          .nav-text-logo {
+            display: block;
+          }
+          .main-nav {
+            display: flex;
+            gap: 1.25rem;
+            align-items: center;
+          }
+          .social-links-nav {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+            margin-left: 0.5rem;
+            padding-left: 1rem;
+            border-left: 1px solid rgba(255,255,255,0.2);
+          }
           .social-icon-nav { 
             width: 32px; 
             height: 32px; 
@@ -58,11 +88,24 @@ export default function Navbar() {
             padding: 7px;
           }
           .social-icon-nav:hover { 
-            background: var(--foreground); 
-            color: var(--primary-blue);
+            background: rgba(255,255,255,0.2); 
             transform: translateY(-2px); 
           }
           .social-icon-nav svg { width: 100%; height: 100%; }
+
+          @media (max-width: 1024px) {
+            .nav-text-logo { display: none; }
+            .nav-image-logo { display: block; }
+            .main-nav { gap: 1.25rem; }
+            .main-nav a { font-size: 1.2rem; }
+            .nav-links-wrapper { gap: 1.25rem !important; }
+          }
+
+          @media (max-width: 768px) {
+            .main-nav { gap: 0.8rem; }
+            .main-nav a { font-size: 1.1rem; }
+            .social-links-nav { display: none; }
+          }
         `}} />
       </div>
     </header>
