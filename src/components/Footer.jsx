@@ -22,9 +22,7 @@ export default function Footer() {
             <a href="https://www.youtube.com/channel/UCxhIYuLtgo_apR3rzl82flA" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="YouTube">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
             </a>
-            <a href="https://x.com/mesenlladorio" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="X">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            </a>
+
             <a href="https://www.tiktok.com/@mesenlladorio" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="TikTok">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.032 2.612.353 3.746 1.055 1.255.772 2.103 2.1 2.4 3.568 1.132-.016 2.261-.17 3.35-.46a.07.07 0 0 1 .094.062v4.444a.07.07 0 0 1-.059.07 7.02 7.02 0 0 1-4.06-1.18V13.5a7.5 7.5 0 1 1-10.5-6.91v4.44a3.02 3.02 0 1 0 3.02 4.02v-15a.07.07 0 0 1 .07-.07h2.51z"/></svg>
             </a>
