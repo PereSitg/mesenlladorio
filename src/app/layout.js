@@ -2,6 +2,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,8 +18,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ca">
       <body className={inter.className}>
+        <ScrollToTop />
         <Navbar />
-        <main className="layout-container" style={{ flex: 1, paddingTop: '170px' }}>
+        <main className="layout-container" style={{ flex: 1, paddingTop: '110px' }}>
           {children}
         </main>
         <Footer />
