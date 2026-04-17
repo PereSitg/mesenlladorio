@@ -111,7 +111,7 @@ export default function Newsletter() {
                   marginBottom: '2.5rem',
                   lineHeight: 1.6
                 }}>
-                  Rep directament al teu correu les millors històries, guies sobre criptomonedes i les últimes estafes detectades.
+                  Rep directament al teu correu els nostres millors videos i les nostres històries.
                 </p>
 
                 <form 
