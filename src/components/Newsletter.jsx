@@ -1,11 +1,16 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function Newsletter() {
+  const pathname = usePathname();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle'); // idle, loading, success, error
   const [errorMessage, setErrorMessage] = useState('');
+
+  // No mostrem la newsletter al dashboard
+  if (pathname?.startsWith('/dashboard')) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -2,12 +2,22 @@ import Link from "next/link";
 import { getAllVideos } from "@/lib/firebase/videos";
 import YouTubePlayer from "@/components/YouTubePlayer";
 
+import { getYoutubeSEO } from "@/lib/firebase/settings";
+
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Canal de YouTube - Més enllà d'Orió",
-  description: "Explora tots els vídeos del nostre canal de YouTube sobre tecnologia, estafes i curiositats.",
-};
+export async function generateMetadata() {
+  const seo = await getYoutubeSEO();
+  return {
+    title: seo?.title || "Canal de YouTube - Més enllà d'Orió",
+    description: seo?.description || "Explora tots els vídeos del nostre canal de YouTube sobre tecnologia, estafes i curiositats.",
+    openGraph: {
+      title: seo?.title,
+      description: seo?.description,
+    }
+  };
+}
+
 
 export default async function YouTubePage() {
   const videos = await getAllVideos();

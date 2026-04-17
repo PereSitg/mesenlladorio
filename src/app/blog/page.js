@@ -1,12 +1,22 @@
 import Link from 'next/link';
 import { getAllPosts } from '@/lib/firebase/posts';
 
+import { getBlogSEO } from '@/lib/firebase/settings';
+
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: "Blog i Articles | Més enllà d'Orió",
-  description: "Tecnologia, històries, criptomonedes i coses random.",
-};
+export async function generateMetadata() {
+  const seo = await getBlogSEO();
+  return {
+    title: seo?.title || "Blog i Articles | Més enllà d'Orió",
+    description: seo?.description || "Tecnologia, històries, criptomonedes i coses random.",
+    openGraph: {
+      title: seo?.title,
+      description: seo?.description,
+    }
+  };
+}
+
 
 export default async function BlogIndex() {
   const posts = await getAllPosts();

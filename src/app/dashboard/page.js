@@ -6,7 +6,7 @@ import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { getAllPosts, createPost, updatePost, deletePost } from "@/lib/firebase/posts";
 import { getAllVideos, createVideo, updateVideo, deleteVideo } from "@/lib/firebase/videos";
 import { getAllPages, createPage, updatePage, deletePage } from "@/lib/firebase/pages";
-import { getHomeSEO, updateHomeSEO } from '@/lib/firebase/settings';
+import { getHomeSEO, updateHomeSEO, getBlogSEO, updateBlogSEO, getYoutubeSEO, updateYoutubeSEO } from '@/lib/firebase/settings';
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import mammoth from "mammoth";
 
@@ -30,7 +30,7 @@ export default function Dashboard() {
   const [contentImageSnippet, setContentImageSnippet] = useState("");
   const [uploadingContentImage, setUploadingContentImage] = useState(false);
   
-  // Vistes: 'menu', 'list', 'form', 'videos', 'video-form', 'pages', 'page-form', 'seo-home'
+  // Vistes: 'menu', 'list', 'form', 'videos', 'video-form', 'pages', 'page-form', 'seo-home', 'seo-blog', 'seo-youtube'
   const [view, setView] = useState('menu'); 
   
   // Articles
@@ -51,7 +51,11 @@ export default function Dashboard() {
     seoDescription: ""
   });
   const [homeSEO, setHomeSEO] = useState({ title: "", description: "", imageUrl: "" });
+  const [blogSEO, setBlogSEO] = useState({ title: "", description: "" });
+  const [youtubeSEO, setYoutubeSEO] = useState({ title: "", description: "" });
   const [loadingHomeSEO, setLoadingHomeSEO] = useState(false);
+  const [loadingBlogSEO, setLoadingBlogSEO] = useState(false);
+  const [loadingYoutubeSEO, setLoadingYoutubeSEO] = useState(false);
   const [articleImageFile, setArticleImageFile] = useState(null);
   const [uploadingArticle, setUploadingArticle] = useState(false);
 
@@ -102,6 +106,8 @@ export default function Dashboard() {
           loadVideos();
           loadPages();
           loadHomeSEO();
+          loadBlogSEO();
+          loadYoutubeSEO();
         }
       }
       setLoading(false);
@@ -113,6 +119,8 @@ export default function Dashboard() {
   const loadVideos = async () => { setVideosList(await getAllVideos()); };
   const loadPages = async () => { setPagesList(await getAllPages()); };
   const loadHomeSEO = async () => { const data = await getHomeSEO(); if (data) setHomeSEO(data); };
+  const loadBlogSEO = async () => { const data = await getBlogSEO(); if (data) setBlogSEO(data); };
+  const loadYoutubeSEO = async () => { const data = await getYoutubeSEO(); if (data) setYoutubeSEO(data); };
 
   const handleLogin = async () => {
     try {
@@ -439,6 +447,26 @@ export default function Dashboard() {
     } catch (err) { alert("Error al guardar SEO."); }
     finally { setLoadingHomeSEO(false); }
   };
+  
+  const handleBlogSEOSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingBlogSEO(true);
+    try {
+      await updateBlogSEO(blogSEO);
+      alert("SEO del Blog actualitzat!");
+    } catch (err) { alert("Error al guardar SEO del Blog."); }
+    finally { setLoadingBlogSEO(false); }
+  };
+
+  const handleYoutubeSEOSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingYoutubeSEO(true);
+    try {
+      await updateYoutubeSEO(youtubeSEO);
+      alert("SEO de YouTube actualitzat!");
+    } catch (err) { alert("Error al guardar SEO de YouTube."); }
+    finally { setLoadingYoutubeSEO(false); }
+  };
 
   if (loading) return <div className="layout-container" style={{ padding: '4rem 1rem', textAlign: 'center' }}>Carregant...</div>;
 
@@ -465,7 +493,7 @@ export default function Dashboard() {
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <h1 style={{ fontSize: '1.8rem', color: 'var(--primary-dark)', cursor: 'pointer', margin: 0 }} onClick={() => setView('menu')}>Panell de Control</h1>
-           <span style={{ background: '#1d4ed8', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 }}>v1.3 SEO MASTER</span>
+           <span style={{ background: '#1d4ed8', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700 }}>v1.4 SEO & NEWSLETTER FIX</span>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button onClick={handleLogout} className="btn" style={{ background: 'transparent', border: '1px solid var(--primary-blue)', color: 'var(--primary-blue)', padding: '0.3rem 0.8rem', fontSize: '0.8rem' }}>Sortir</button>
@@ -495,9 +523,17 @@ export default function Dashboard() {
             <span style={{ fontSize: '2.5rem' }}>📺</span>
             <h3>Vídeos ({videosList.length})</h3>
           </div>
-          <div className="card" onClick={() => setView('seo-home')} style={{ cursor: 'pointer', textAlign: 'center', border: '2px solid var(--primary-blue)', background: '#eff6ff' }}>
-            <span style={{ fontSize: '2.5rem' }}>🔍</span>
+          <div className="card" onClick={() => setView('seo-home')} style={{ cursor: 'pointer', textAlign: 'center', border: '1px solid var(--primary-blue)', background: '#eff6ff' }}>
+            <span style={{ fontSize: '2.5rem' }}>🏠</span>
             <h3>SEO Pàgina d&apos;Inici</h3>
+          </div>
+          <div className="card" onClick={() => setView('seo-blog')} style={{ cursor: 'pointer', textAlign: 'center', border: '1px solid var(--primary-blue)', background: '#eff6ff' }}>
+            <span style={{ fontSize: '2.5rem' }}>📝</span>
+            <h3>SEO Blog</h3>
+          </div>
+          <div className="card" onClick={() => setView('seo-youtube')} style={{ cursor: 'pointer', textAlign: 'center', border: '1px solid var(--primary-blue)', background: '#eff6ff' }}>
+            <span style={{ fontSize: '2.5rem' }}>📺</span>
+            <h3>SEO YouTube</h3>
           </div>
           <a href="/" target="_blank" className="card" style={{ cursor: 'pointer', textAlign: 'center', textDecoration: 'none', color: 'inherit' }}>
             <span style={{ fontSize: '2.5rem' }}>🚀</span>
@@ -955,6 +991,113 @@ export default function Dashboard() {
           </form>
         </div>
       )}
+
+      {/* SEO BLOG EDITOR */}
+      {view === 'seo-blog' && (
+        <div className="card" style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <header style={{ marginBottom: '2rem', borderBottom: '2px solid var(--primary-blue)', paddingBottom: '0.5rem' }}>
+             <h2 style={{ margin: 0 }}>SEO Pàgina de Blog</h2>
+             <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem' }}>Configuració de com es veu l&apos;índex del blog a Google.</p>
+          </header>
+
+          <form onSubmit={handleBlogSEOSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+             <div style={{ padding: '1.5rem', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.8rem' }}>Així es veurà a Google:</p>
+                <div style={{ fontSize: '20px', color: '#1a0dab', marginBottom: '4px' }}>
+                  {blogSEO.title || "Títol del blog..."}
+                </div>
+                <div style={{ fontSize: '14px', color: '#006621', marginBottom: '4px' }}>
+                  https://mesenlladorio.vercel.app/blog
+                </div>
+                <div style={{ fontSize: '14px', color: '#545454', lineHeight: '1.5' }}>
+                  {blogSEO.description || "Descripció del blog..."}
+                </div>
+             </div>
+
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+               <label style={{ fontWeight: 700 }}>Títol Blog:</label>
+               <input 
+                 type="text" 
+                 value={blogSEO.title} 
+                 onChange={e => setBlogSEO({...blogSEO, title: e.target.value})} 
+                 placeholder="Blog | Més enllà d'Orió"
+                 style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', fontSize: '1.1rem' }} 
+               />
+             </div>
+
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+               <label style={{ fontWeight: 700 }}>Descripció Blog:</label>
+               <textarea 
+                 value={blogSEO.description} 
+                 onChange={e => setBlogSEO({...blogSEO, description: e.target.value})} 
+                 placeholder="Explica de què va el teu blog..."
+                 style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', minHeight: '120px' }} 
+               />
+             </div>
+
+             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button type="submit" className="btn" disabled={loadingBlogSEO} style={{ flex: 1, padding: '1rem' }}>
+                  {loadingBlogSEO ? 'Guardant...' : 'Desar Configuració SEO'}
+                </button>
+                <button type="button" className="btn" onClick={() => setView('menu')} style={{ background: 'var(--gray-200)', color: 'black' }}>Tornar</button>
+             </div>
+          </form>
+        </div>
+      )}
+
+      {/* SEO YOUTUBE EDITOR */}
+      {view === 'seo-youtube' && (
+        <div className="card" style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <header style={{ marginBottom: '2rem', borderBottom: '2px solid var(--primary-blue)', paddingBottom: '0.5rem' }}>
+             <h2 style={{ margin: 0 }}>SEO Pàgina de YouTube</h2>
+             <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem' }}>Configuració de com es veu la galeria de vídeos a Google.</p>
+          </header>
+
+          <form onSubmit={handleYoutubeSEOSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+             <div style={{ padding: '1.5rem', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '0.8rem' }}>Així es veurà a Google:</p>
+                <div style={{ fontSize: '20px', color: '#1a0dab', marginBottom: '4px' }}>
+                  {youtubeSEO.title || "Títol de YouTube..."}
+                </div>
+                <div style={{ fontSize: '14px', color: '#006621', marginBottom: '4px' }}>
+                  https://mesenlladorio.vercel.app/youtube
+                </div>
+                <div style={{ fontSize: '14px', color: '#545454', lineHeight: '1.5' }}>
+                  {youtubeSEO.description || "Descripció de YouTube..."}
+                </div>
+             </div>
+
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+               <label style={{ fontWeight: 700 }}>Títol YouTube:</label>
+               <input 
+                 type="text" 
+                 value={youtubeSEO.title} 
+                 onChange={e => setYoutubeSEO({...youtubeSEO, title: e.target.value})} 
+                 placeholder="Canal de YouTube | Més enllà d'Orió"
+                 style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', fontSize: '1.1rem' }} 
+               />
+             </div>
+
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+               <label style={{ fontWeight: 700 }}>Descripció YouTube:</label>
+               <textarea 
+                 value={youtubeSEO.description} 
+                 onChange={e => setYoutubeSEO({...youtubeSEO, description: e.target.value})} 
+                 placeholder="Explica de què va la teva galeria de vídeos..."
+                 style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)', minHeight: '120px' }} 
+               />
+             </div>
+
+             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button type="submit" className="btn" disabled={loadingYoutubeSEO} style={{ flex: 1, padding: '1rem' }}>
+                  {loadingYoutubeSEO ? 'Guardant...' : 'Desar Configuració SEO'}
+                </button>
+                <button type="button" className="btn" onClick={() => setView('menu')} style={{ background: 'var(--gray-200)', color: 'black' }}>Tornar</button>
+             </div>
+          </form>
+        </div>
+      )}
+
     </div>
   );
 }
