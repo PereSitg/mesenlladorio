@@ -27,7 +27,7 @@ export default function Navbar() {
             <Link href="/" style={{ fontWeight: 500 }}>Inici</Link>
             <Link href="/blog" style={{ fontWeight: 500 }}>Blog</Link>
             <Link href="/youtube" style={{ fontWeight: 500 }}>YouTube</Link>
-            <Link href="/about" style={{ fontWeight: 500 }}>Sobre nosaltres</Link>
+            <Link href="/about" style={{ fontWeight: 500 }}>Nosaltres</Link>
           </nav>
           
           <div className="social-links-nav">
@@ -100,8 +100,16 @@ export default function Navbar() {
           }
 
           @media (max-width: 768px) {
-            .main-nav { gap: 0.8rem; }
-            .main-nav a { font-size: 1.1rem; }
+            .nav-logo-container {
+              margin-right: 1.5rem;
+            }
+            .nav-image-logo { 
+              height: 40px; 
+            }
+            .main-nav { 
+              gap: 1.2rem; 
+            }
+            .main-nav a { font-size: 1.05rem; }
             .social-links-nav { display: none; }
           }
         `}} />

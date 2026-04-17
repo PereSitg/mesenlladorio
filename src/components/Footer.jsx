@@ -9,8 +9,8 @@ export default function Footer() {
       marginTop: 'auto' 
     }}>
       <div className="layout-container">
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '2rem', marginBottom: '3rem' }}>
-          <div>
+        <div className="footer-content" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '2rem', marginBottom: '3rem' }}>
+          <div className="footer-info">
             <p style={{ fontWeight: 'bold', fontSize: '1.6rem', marginBottom: '1rem', color: 'white' }}>Més enllà d&apos;Orió</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <Link href="/youtube" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: '1rem', fontWeight: 500 }} className="footer-link">Youtube Videos</Link>
@@ -18,7 +18,7 @@ export default function Footer() {
             </div>
           </div>
           
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div className="footer-socials" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             <a href="https://www.youtube.com/channel/UCxhIYuLtgo_apR3rzl82flA" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="YouTube">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
             </a>
@@ -64,6 +64,24 @@ export default function Footer() {
             box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
           }
           .social-icon svg { width: 100%; height: 100%; }
+
+          @media (max-width: 768px) {
+            .footer-content {
+              flex-direction: column !important;
+              align-items: center !important;
+              text-align: center !important;
+              gap: 2.5rem !important;
+            }
+            .footer-info {
+              display: flex !important;
+              flex-direction: column !important;
+              align-items: center !important;
+            }
+            .footer-socials {
+              justify-content: center !important;
+              width: 100% !important;
+            }
+          }
         `}} />
       </div>
     </footer>
