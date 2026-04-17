@@ -17,7 +17,7 @@ export async function generateMetadata({ params }) {
   
   const title = post.seoTitle || post.title;
   const description = post.seoDescription || post.excerpt;
-  const imageUrl = post.imageUrl || "/og-image.jpg";
+  const imageUrl = post.imageUrl || "https://mesenlladorio.vercel.app/og-image.jpg";
   const absoluteUrl = `https://mesenlladorio.vercel.app/blog/${slug}`;
 
   return {

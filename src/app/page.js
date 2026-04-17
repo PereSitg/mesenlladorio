@@ -16,7 +16,7 @@ export async function generateMetadata() {
     openGraph: {
       title: homeSEO?.title,
       description: homeSEO?.description,
-      images: [homeSEO?.imageUrl || "/og-image.jpg"],
+      images: [homeSEO?.imageUrl || "https://mesenlladorio.vercel.app/og-image.jpg"],
     }
   };
 }

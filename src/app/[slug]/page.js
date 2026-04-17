@@ -29,7 +29,7 @@ export async function generateMetadata({ params }) {
       title: seoTitle,
       description: seoDescription,
       type: 'website',
-      images: [page.imageUrl || "/og-image.jpg"]
+      images: [page.imageUrl || "https://mesenlladorio.vercel.app/og-image.jpg"]
     }
   };
 }
