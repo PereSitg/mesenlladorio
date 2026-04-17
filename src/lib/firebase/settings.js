@@ -15,7 +15,7 @@ export const getHomeSEO = async () => {
     return {
       title: "Més enllà d'Orió - Tecnologia, Estafes i Coses Random",
       description: "Tecnologia, històries increïbles, criptomonedes i curiositats. Parlem de tot allò que ens fascina i ens explota el cap.",
-      imageUrl: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1200&q=80"
+      imageUrl: "https://mesenlladorio.vercel.app/og-image.jpg"
     };
   } catch (error) {
     console.error("Error getHomeSEO:", error);
