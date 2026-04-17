@@ -51,6 +51,13 @@ export default function Navbar() {
             align-items: center;
             text-decoration: none;
             color: inherit;
+            cursor: pointer;
+            position: relative;
+            z-index: 10;
+            transition: opacity 0.3s ease;
+          }
+          .nav-logo-container:hover {
+            opacity: 0.8;
           }
           .nav-image-logo {
             display: none;
