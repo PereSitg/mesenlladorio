@@ -1,6 +1,21 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
+  const pathname = usePathname();
+
+  const handleLogoClick = (e) => {
+    if (pathname === '/') {
+      e.preventDefault();
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <header style={{ 
       background: 'rgba(27, 79, 114, 0.95)', 
@@ -18,13 +33,13 @@ export default function Navbar() {
       borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
     }}>
       <div className="layout-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link href="/" className="nav-logo-container">
+        <Link href="/" className="nav-logo-container" onClick={handleLogoClick}>
           <span className="nav-text-logo">Més enllà d&apos;Orió</span>
           <img src="/logo_owl.png" alt="Logo" className="nav-image-logo" />
         </Link>
         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }} className="nav-links-wrapper">
           <nav className="main-nav">
-            <Link href="/" style={{ fontWeight: 500 }}>Inici</Link>
+            <Link href="/" style={{ fontWeight: 500 }} onClick={handleLogoClick}>Inici</Link>
             <Link href="/blog" style={{ fontWeight: 500 }}>Blog</Link>
             <Link href="/youtube" style={{ fontWeight: 500 }}>YouTube</Link>
             <Link href="/about" style={{ fontWeight: 500 }}>Nosaltres</Link>
