@@ -9,7 +9,6 @@ import Newsletter from "@/components/Newsletter";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  metadataBase: new URL('https://mesenlladorio.vercel.app'),
   title: "Més enllà d'Orió",
   description: "Tecnologia, estafes, històries, criptomonedes i coses random. Parlem de tot allò que ens interessa i passa pel cap.",
   icons: {
@@ -18,20 +17,11 @@ export const metadata = {
   openGraph: {
     title: "Més enllà d'Orió",
     description: "Tecnologia, estafes, històries, criptomonedes i coses random.",
-    images: [
-      {
-        url: 'https://mesenlladorio.vercel.app/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: "Més enllà d'Orió",
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: "Més enllà d'Orió",
     description: "Tecnologia, estafes, històries, criptomonedes i coses random.",
-    images: ['https://mesenlladorio.vercel.app/og-image.jpg'],
   },
 };
 
