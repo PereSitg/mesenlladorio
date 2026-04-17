@@ -4,6 +4,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 
+import Newsletter from "@/components/Newsletter";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -23,6 +25,7 @@ export default function RootLayout({ children }) {
         <main className="layout-container" style={{ flex: 1, paddingTop: '110px' }}>
           {children}
         </main>
+        <Newsletter />
         <Footer />
       </body>
     </html>
