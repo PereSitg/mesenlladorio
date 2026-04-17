@@ -111,7 +111,7 @@ export default function Newsletter() {
                   marginBottom: '2.5rem',
                   lineHeight: 1.6
                 }}>
-                  Rep directament al teu correu els nostres millors videos i les nostres històries.
+                  Rep directament al teu correu els nostres millors vídeos i les nostres històries.
                 </p>
 
                 <form 
