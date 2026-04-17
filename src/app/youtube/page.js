@@ -53,7 +53,7 @@ export default async function YouTubePage() {
           <div key={video.id || video.videoId} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRadius: '24px', border: 'none', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', background: 'white' }}>
             <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
               <img 
-                src={video.customThumbnailUrl || (video.videoId ? `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg` : "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=800&q=80")} 
+                src={video.customThumbnailUrl || (video.videoId ? `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg` : "/og-image.jpg")} 
                 alt={video.title} 
                 style={{ objectFit: 'cover', width: '100%', height: '100%' }} 
               />

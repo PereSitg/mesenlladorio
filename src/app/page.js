@@ -16,7 +16,7 @@ export async function generateMetadata() {
     openGraph: {
       title: homeSEO?.title,
       description: homeSEO?.description,
-      images: [homeSEO?.imageUrl || "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1200&q=80"],
+      images: [homeSEO?.imageUrl || "/og-image.jpg"],
     }
   };
 }

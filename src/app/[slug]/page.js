@@ -29,7 +29,7 @@ export async function generateMetadata({ params }) {
       title: seoTitle,
       description: seoDescription,
       type: 'website',
-      images: [page.imageUrl || "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1200&q=80"]
+      images: [page.imageUrl || "/og-image.jpg"]
     }
   };
 }

@@ -29,7 +29,7 @@ export default async function BlogIndex() {
           {posts.map(post => (
             <Link href={`/blog/${post.slug}`} key={post.id} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', textDecoration: 'none', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
                <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
-                 <img src={post.imageUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80"} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }} className="zoom-on-hover" />
+                 <img src={post.imageUrl || "/og-image.jpg"} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }} className="zoom-on-hover" />
                </div>
                <div style={{ padding: '2rem', background: 'white', flex: 1, display: 'flex', flexDirection: 'column' }}>
                   <span style={{ fontSize: '0.9rem', color: 'var(--primary-blue)', fontWeight: 600, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
