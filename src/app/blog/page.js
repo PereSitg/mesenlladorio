@@ -22,7 +22,7 @@ export default async function BlogIndex() {
   const posts = await getAllPosts();
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '2rem 1rem' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
       <h1 style={{ fontSize: '3.5rem', color: 'var(--primary-dark)', marginBottom: '1rem', fontWeight: 800, letterSpacing: '-0.02em', textAlign: 'center' }}>
         El Nostre Blog
       </h1>
@@ -35,7 +35,7 @@ export default async function BlogIndex() {
           <p>Encara no hi ha articles publicats. Torna aviat!</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '2.5rem' }}>
+        <div className="blog-grid">
           {posts.map(post => (
             <Link href={`/blog/${post.slug}`} key={post.id} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', textDecoration: 'none', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
                <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
@@ -56,6 +56,21 @@ export default async function BlogIndex() {
         </div>
       )}
       <style dangerouslySetInnerHTML={{__html: `
+        .blog-grid {
+           display: grid;
+           grid-template-columns: repeat(3, 1fr);
+           gap: 2.5rem;
+        }
+        @media (max-width: 1024px) {
+           .blog-grid {
+              grid-template-columns: repeat(2, 1fr);
+           }
+        }
+        @media (max-width: 640px) {
+           .blog-grid {
+              grid-template-columns: 1fr;
+           }
+        }
         .zoom-on-hover:hover {
            transform: scale(1.08);
         }
