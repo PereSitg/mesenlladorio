@@ -20,7 +20,7 @@ export const getAllPosts = async () => {
   try {
     const q = query(collection(db, COLLECTION_NAME), orderBy("createdAt", "desc"));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => {
+    const posts = querySnapshot.docs.map(doc => {
       const data = doc.data();
       let dateStr = new Date().toISOString();
       
@@ -41,6 +41,9 @@ export const getAllPosts = async () => {
         createdAt: dateStr
       };
     });
+
+    // Ordenem explícitament per data descendent per evitar problemes amb tipus mixtes (String vs Timestamp) a Firestore
+    return posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } catch (error) {
     console.error("Error fetching posts:", error);
     return [];

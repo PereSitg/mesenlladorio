@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import { getPostBySlug } from '@/lib/firebase/posts';
 import { notFound } from 'next/navigation';
 
@@ -76,7 +77,7 @@ export default async function BlogPost({ params }) {
          <span>{new Date(post.createdAt).toLocaleDateString('ca-ES', { month: 'long', year: 'numeric' })}</span>
       </div>
       <div className="markdown-content" style={{ fontSize: '1.25rem', lineHeight: 1.8, color: 'rgba(0,0,0,0.85)' }}>
-        <ReactMarkdown>{post.content}</ReactMarkdown>
+        <ReactMarkdown rehypePlugins={[rehypeRaw]}>{post.content}</ReactMarkdown>
       </div>
 
       <ShareButtons 
@@ -98,6 +99,15 @@ export default async function BlogPost({ params }) {
           margin: 2rem auto; 
           display: block; 
           box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+        }
+        /* Suport per a vídeos de YouTube i altres iframes */
+        .markdown-content iframe {
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          border-radius: 16px;
+          margin: 2rem 0;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+          border: none;
         }
       `}} />
     </article>

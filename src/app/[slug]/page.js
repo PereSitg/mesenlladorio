@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import { getPageBySlug } from '@/lib/firebase/pages';
 import { notFound } from 'next/navigation';
 import ShareButtons from '@/components/ShareButtons';
@@ -51,7 +52,7 @@ export default async function DynamicPage({ params }) {
       </header>
 
       <div className="markdown-content" style={{ fontSize: '1.2rem', lineHeight: 1.8, color: 'rgba(0,0,0,0.8)' }}>
-        <ReactMarkdown>{page.content}</ReactMarkdown>
+        <ReactMarkdown rehypePlugins={[rehypeRaw]}>{page.content}</ReactMarkdown>
       </div>
 
       <ShareButtons 
@@ -67,6 +68,15 @@ export default async function DynamicPage({ params }) {
         .markdown-content li { margin-bottom: 0.6rem; }
         .markdown-content strong { color: var(--primary-dark); }
         .markdown-content hr { margin: 3rem 0; border: 0; border-top: 1px solid var(--gray-200); }
+        /* Suport per a vídeos de YouTube i altres iframes */
+        .markdown-content iframe {
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          border-radius: 16px;
+          margin: 2rem 0;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+          border: none;
+        }
       `}} />
     </article>
   );
