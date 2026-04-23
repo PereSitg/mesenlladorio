@@ -5,6 +5,6 @@ export default function robots() {
       allow: '/',
       disallow: '/dashboard/',
     },
-    sitemap: 'https://mesenlladorio-c8gr.vercel.app/sitemap.xml',
+    sitemap: 'https://mesenlladorio.com/sitemap.xml',
   }
 }

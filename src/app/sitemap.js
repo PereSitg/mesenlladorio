@@ -2,7 +2,7 @@ import { getAllPosts } from "@/lib/firebase/posts";
 import { getAllPages } from "@/lib/firebase/pages";
 
 export default async function sitemap() {
-  const baseUrl = "https://mesenlladorio-c8gr.vercel.app"; // Domini actual de Vercel
+  const baseUrl = "https://mesenlladorio.com"; // Domini de producció
 
   // 1. Pàgines estàtiques del framework
   const routes = ["", "/blog", "/youtube", "/about", "/index"].map((route) => ({
