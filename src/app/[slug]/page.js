@@ -18,6 +18,7 @@ export async function generateMetadata({ params }) {
   
   const seoTitle = page.seoTitle || page.title;
   const seoDescription = page.seoDescription || "Descobreix més sobre " + page.title;
+  const imageUrl = page.imageUrl || "/og-image.jpg";
 
   return {
     title: `${seoTitle} | Més enllà d'Orió`,
@@ -30,6 +31,20 @@ export async function generateMetadata({ params }) {
       title: seoTitle,
       description: seoDescription,
       type: 'website',
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: seoTitle,
+        }
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seoTitle,
+      description: seoDescription,
+      images: [imageUrl],
     }
   };
 }

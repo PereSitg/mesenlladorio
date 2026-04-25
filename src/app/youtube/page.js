@@ -8,12 +8,28 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const seo = await getYoutubeSEO();
+  const imageUrl = "/og-image.jpg"; // YouTube index default image
+  
   return {
     title: seo?.title || "Canal de YouTube - Més enllà d'Orió",
     description: seo?.description || "Explora tots els vídeos del nostre canal de YouTube sobre tecnologia, estafes i curiositats.",
     openGraph: {
       title: seo?.title,
       description: seo?.description,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: seo?.title || "YouTube | Més enllà d'Orió",
+        }
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seo?.title,
+      description: seo?.description,
+      images: [imageUrl],
     }
   };
 }

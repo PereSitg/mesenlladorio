@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const homeSEO = await getHomeSEO();
+  const imageUrl = homeSEO?.imageUrl || "/og-image.jpg";
   
   return {
     title: homeSEO?.title || "Més enllà d'Orió - Tecnologia, Estafes i Coses Random",
@@ -16,6 +17,20 @@ export async function generateMetadata() {
     openGraph: {
       title: homeSEO?.title,
       description: homeSEO?.description,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: homeSEO?.title || "Més enllà d'Orió",
+        }
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: homeSEO?.title,
+      description: homeSEO?.description,
+      images: [imageUrl],
     }
   };
 }
