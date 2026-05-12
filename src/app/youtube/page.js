@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllVideos } from "@/lib/firebase/videos";
 import YouTubePlayer from "@/components/YouTubePlayer";
+import { getYouTubeId } from "@/lib/youtube";
 
 import { getYoutubeSEO } from "@/lib/firebase/settings";
 
@@ -79,7 +80,7 @@ export default async function YouTubePage() {
           <div key={video.id || video.videoId} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRadius: '24px', border: 'none', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', background: 'white' }}>
             <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
               <img 
-                src={video.customThumbnailUrl || (video.videoId ? `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg` : "/og-image.jpg")} 
+                src={video.customThumbnailUrl || (video.videoId ? `https://img.youtube.com/vi/${getYouTubeId(video.videoId)}/hqdefault.jpg` : "/og-image.jpg")} 
                 alt={video.title} 
                 style={{ objectFit: 'cover', width: '100%', height: '100%' }} 
               />
@@ -105,7 +106,7 @@ export default async function YouTubePage() {
               <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1.5rem', lineHeight: 1.4, color: 'var(--primary-dark)' }}>{video.title}</h3>
               {video.videoId ? (
                 <a 
-                  href={`https://youtube.com/watch?v=${video.videoId}`} 
+                  href={`https://youtube.com/watch?v=${getYouTubeId(video.videoId)}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="btn" 

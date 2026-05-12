@@ -8,6 +8,7 @@ import { getAllVideos, createVideo, updateVideo, deleteVideo } from "@/lib/fireb
 import { getAllPages, createPage, updatePage, deletePage } from "@/lib/firebase/pages";
 import { getHomeSEO, updateHomeSEO, getBlogSEO, updateBlogSEO, getYoutubeSEO, updateYoutubeSEO } from '@/lib/firebase/settings';
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import { getYouTubeId } from "@/lib/youtube";
 import mammoth from "mammoth";
 
 // Carreguem dinàmicament PDF.js només al client
@@ -347,7 +348,7 @@ export default function Dashboard() {
     setSubmitLoading(true);
     try {
       const payload = { 
-        videoId: videoFormData.videoId ? videoFormData.videoId.trim() : "", 
+        videoId: videoFormData.videoId ? getYouTubeId(videoFormData.videoId) : "", 
         title: videoFormData.title ? videoFormData.title.trim() : "", 
         customThumbnailUrl: videoFormData.customThumbnailUrl ? videoFormData.customThumbnailUrl.trim() : "",
         isFeatured: !!videoFormData.isFeatured,
@@ -885,7 +886,14 @@ export default function Dashboard() {
           <form onSubmit={handleVideoSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginTop: '1.5rem' }}>
             <div>
               <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>ID de YouTube (deixa-ho buit si és només un anunci):</label>
-              <input type="text" value={videoFormData.videoId} onChange={e => setVideoFormData({...videoFormData, videoId: e.target.value})} placeholder="Ex: s4ycv5hkAPk" style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)'}} />
+              <input 
+                type="text" 
+                value={videoFormData.videoId} 
+                onChange={e => setVideoFormData({...videoFormData, videoId: e.target.value})} 
+                onBlur={e => setVideoFormData({...videoFormData, videoId: getYouTubeId(e.target.value)})}
+                placeholder="Ex: s4ycv5hkAPk o la URL completa" 
+                style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--gray-300)'}} 
+              />
             </div>
             <div>
               <label style={{fontWeight: 600, display: 'block', marginBottom: '0.5rem'}}>Títol:</label>

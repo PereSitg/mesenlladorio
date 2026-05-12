@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getFeaturedVideo, getAllVideos } from "@/lib/firebase/videos";
 import { getAllPosts } from "@/lib/firebase/posts";
 import YouTubePlayer from "@/components/YouTubePlayer";
+import { getYouTubeId } from "@/lib/youtube";
 
 import { getHomeSEO } from "@/lib/firebase/settings";
 
@@ -108,7 +109,7 @@ export default async function Home() {
                 <div key={video.id} className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRadius: '24px', border: 'none', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)', background: 'white', transition: 'transform 0.3s ease' }}>
                   <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
                     <img 
-                      src={video.customThumbnailUrl || (video.videoId ? `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg` : "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=800&q=80")} 
+                      src={video.customThumbnailUrl || (video.videoId ? `https://img.youtube.com/vi/${getYouTubeId(video.videoId)}/hqdefault.jpg` : "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=800&q=80")} 
                       alt={video.title} 
                       style={{ objectFit: 'cover', width: '100%', height: '100%', transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }} 
                       className="zoom-on-hover" 
@@ -136,7 +137,7 @@ export default async function Home() {
                   <div style={{ padding: '2rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <h3 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '2rem', lineHeight: 1.3, color: 'var(--primary-dark)' }}>{video.title}</h3>
                     {video.videoId ? (
-                      <a href={`https://youtube.com/watch?v=${video.videoId}`} target="_blank" rel="noopener noreferrer" className="btn" style={{ textAlign: 'center', background: 'var(--primary-blue)', width: '100%', borderRadius: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', padding: '1rem', fontWeight: 600 }}>
+                      <a href={`https://youtube.com/watch?v=${getYouTubeId(video.videoId)}`} target="_blank" rel="noopener noreferrer" className="btn" style={{ textAlign: 'center', background: 'var(--primary-blue)', width: '100%', borderRadius: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', padding: '1rem', fontWeight: 600 }}>
                         <svg style={{ width: 20, height: 20, fill: 'white' }} viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
                         Veure Vídeo
                       </a>

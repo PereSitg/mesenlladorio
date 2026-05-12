@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { getYouTubeId } from "@/lib/youtube";
 
-export default function YouTubePlayer({ videoId, title, isFeatured = false, customThumbnailUrl = null }) {
+export default function YouTubePlayer({ videoId: rawVideoId, title, isFeatured = false, customThumbnailUrl = null }) {
   const [isPlaying, setIsPlaying] = useState(false);
+  
+  const videoId = getYouTubeId(rawVideoId);
 
   // Si no hi ha videoId, és un anunci (només foto)
   const isAnnouncement = !videoId;
