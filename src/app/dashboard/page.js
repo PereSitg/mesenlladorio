@@ -215,15 +215,36 @@ export default function Dashboard() {
     }
   };
 
-  const handleAmazonInsert = (isPage = false) => {
-    const tag = `\n<amazon-card \n  title="Nom del Producte" \n  url="https://amzn.to/..." \n  image="https://..." \n  price="19,99€" \n/>\n`;
+  const handleAmazonInsert = async (isPage = false) => {
+    const url = prompt("Enganxa l'enllaç d'Amazon:");
+    if (!url) return;
+
+    let title = "Nom del Producte";
+    let image = "https://...";
+    let price = "19,99€";
+
+    try {
+      // Intentem treure les dades automàticament
+      const res = await fetch(`/api/amazon?url=${encodeURIComponent(url)}`);
+      const data = await res.json();
+      
+      if (data && !data.error) {
+        title = data.title || title;
+        image = data.image || image;
+        price = data.price || price;
+      }
+    } catch (err) {
+      console.error("Error al carregar dades d'Amazon", err);
+    }
+
+    const tag = `\n<amazon-card \n  title="${title}" \n  url="${url}" \n  image="${image}" \n  price="${price}" \n/>\n`;
 
     if (isPage) {
       setPageFormData(prev => ({ ...prev, content: prev.content + tag }));
     } else {
       setFormData(prev => ({ ...prev, content: prev.content + tag }));
     }
-    alert("S'ha afegit el codi del producte al final de l'article. Ara només has de canviar les dades dins de les cometes!");
+    alert("Producte afegit automàticament! Revisa si les dades són correctes al final de l'article.");
   };
 
   // --- ARTICLES ---
