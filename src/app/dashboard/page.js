@@ -245,7 +245,10 @@ export default function Dashboard() {
       price = prompt("Preu:", price) || price;
     }
 
-    const tag = `\n<amazon-card \n  title="${title}" \n  url="${url}" \n  image="${image}" \n  price="${price}" \n/>\n`;
+    // Escapem les cometes del títol per evitar trencar el tag HTML
+    const cleanTitle = title.replace(/"/g, '&quot;');
+
+    const tag = `\n<amazon-card \n  title="${cleanTitle}" \n  url="${url}" \n  image="${image}" \n  price="${price}" \n/>\n`;
 
     if (isPage) {
       setPageFormData(prev => ({ ...prev, content: prev.content + tag }));
