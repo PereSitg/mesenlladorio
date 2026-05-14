@@ -218,40 +218,29 @@ export default function Dashboard() {
   const handleAmazonInsert = (isPage = false) => {
     const title = prompt("Títol del producte:");
     if (!title) return;
-    const link = prompt("Enllaç d'afiliat d'Amazon (ex: https://amzn.to/...):");
+    const link = prompt("Enllaç d'afiliat (https://...):");
     if (!link) return;
-    const imageUrl = prompt("URL de la imatge del producte (opcional):");
-    const price = prompt("Preu (opcional, ex: 19,99€):");
+    const img = prompt("URL de la imatge (opcional):") || 'https://via.placeholder.com/200x200?text=Producte';
+    const preu = prompt("Preu (opcional, ex: 19,99€):") || '';
 
-    const amazonHtml = `\n<a href="${link}" target="_blank" rel="noopener noreferrer" class="amazon-card">
+    const html = `\n<a href="${link}" target="_blank" rel="noopener noreferrer" class="amazon-card">
   <div class="amazon-card-image">
-    <img src="${imageUrl || 'https://via.placeholder.com/200x200?text=Sense+Imatge'}" alt="${title}">
+    <img src="${img}" alt="${title}">
   </div>
   <div class="amazon-card-content">
     <h3>${title}</h3>
-    ${price ? `<p class="amazon-card-price">${price}</p>` : ''}
-    <div class="amazon-card-button">
-      <svg style="width:16px;height:16px" viewBox="0 0 24 24"><path fill="currentColor" d="M17.2,12.5L20.3,15.6C20.9,16.2 20.9,17.1 20.3,17.7L17.7,20.3C17.1,20.9 16.2,20.9 15.6,20.3L12.5,17.2L17.2,12.5M15.1,10.4L10.4,15.1L4.3,9L9,4.3L15.1,10.4M12.3,13.2L13.7,11.8L9.7,7.8L8.3,9.2L12.3,13.2Z" /></svg>
-      Veure a Amazon
-    </div>
+    ${preu ? `<p class="amazon-card-price">${preu}</p>` : ''}
+    <div class="amazon-card-button">Veure a Amazon</div>
   </div>
 </a>\n`;
-    
-    const textarea = isPage ? pageContentRef.current : contentRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const currentText = isPage ? pageFormData.content : formData.content;
-    
-    const before = currentText.substring(0, start);
-    const after = currentText.substring(start);
-    const newContent = `${before}${amazonHtml}${after}`;
 
     if (isPage) {
-      setPageFormData(prev => ({ ...prev, content: newContent }));
+      setPageFormData(prev => ({ ...prev, content: prev.content + html }));
     } else {
-      setFormData(prev => ({ ...prev, content: newContent }));
+      setFormData(prev => ({ ...prev, content: prev.content + html }));
     }
+    
+    alert("Producte inserit al final del text! Pots moure'l on vulguis.");
   };
 
   // --- ARTICLES ---
