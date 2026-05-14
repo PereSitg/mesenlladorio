@@ -33,7 +33,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ca">
-      <head>
+      <head />
+      <body className={inter.className}>
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
             <Script
@@ -50,8 +51,6 @@ export default function RootLayout({ children }) {
             </Script>
           </>
         )}
-      </head>
-      <body className={inter.className}>
         <ScrollToTop />
         <Navbar />
         <main className="layout-container" style={{ flex: 1, paddingTop: '110px' }}>

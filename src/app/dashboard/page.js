@@ -215,6 +215,45 @@ export default function Dashboard() {
     }
   };
 
+  const handleAmazonInsert = (isPage = false) => {
+    const title = prompt("Títol del producte:");
+    if (!title) return;
+    const link = prompt("Enllaç d'afiliat d'Amazon (ex: https://amzn.to/...):");
+    if (!link) return;
+    const imageUrl = prompt("URL de la imatge del producte (opcional):");
+    const price = prompt("Preu (opcional, ex: 19,99€):");
+
+    const amazonHtml = `\n<a href="${link}" target="_blank" rel="noopener noreferrer" class="amazon-card">
+  <div class="amazon-card-image">
+    <img src="${imageUrl || 'https://via.placeholder.com/200x200?text=Sense+Imatge'}" alt="${title}">
+  </div>
+  <div class="amazon-card-content">
+    <h3>${title}</h3>
+    ${price ? `<p class="amazon-card-price">${price}</p>` : ''}
+    <div class="amazon-card-button">
+      <svg style="width:16px;height:16px" viewBox="0 0 24 24"><path fill="currentColor" d="M17.2,12.5L20.3,15.6C20.9,16.2 20.9,17.1 20.3,17.7L17.7,20.3C17.1,20.9 16.2,20.9 15.6,20.3L12.5,17.2L17.2,12.5M15.1,10.4L10.4,15.1L4.3,9L9,4.3L15.1,10.4M12.3,13.2L13.7,11.8L9.7,7.8L8.3,9.2L12.3,13.2Z" /></svg>
+      Veure a Amazon
+    </div>
+  </div>
+</a>\n`;
+    
+    const textarea = isPage ? pageContentRef.current : contentRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const currentText = isPage ? pageFormData.content : formData.content;
+    
+    const before = currentText.substring(0, start);
+    const after = currentText.substring(start);
+    const newContent = `${before}${amazonHtml}${after}`;
+
+    if (isPage) {
+      setPageFormData(prev => ({ ...prev, content: newContent }));
+    } else {
+      setFormData(prev => ({ ...prev, content: newContent }));
+    }
+  };
+
   // --- ARTICLES ---
   const openForm = (post = null) => {
     if (post) {
@@ -724,8 +763,9 @@ export default function Dashboard() {
                <div style={{ width: '1px', background: 'var(--gray-300)', margin: '0 0.5rem' }}></div>
                <button type="button" onClick={() => applyStyle("**", "**")} className="btn-tool" style={{ fontWeight: 800 }} title="Negreta">B</button>
                <button type="button" onClick={() => applyStyle("*", "*")} className="btn-tool" style={{ fontStyle: 'italic' }} title="Cursiva">I</button>
-               <div style={{ width: '1px', background: 'var(--gray-300)', margin: '0 0.5rem' }}></div>
-               <button type="button" onClick={() => handleYouTubeInsert(false)} className="btn-tool" title="Inserir Vídeo de YouTube">📺 YouTube</button>
+                <div style={{ width: '1px', background: 'var(--gray-300)', margin: '0 0.5rem' }}></div>
+                <button type="button" onClick={() => handleYouTubeInsert(false)} className="btn-tool" title="Inserir Vídeo de YouTube">📺 YouTube</button>
+                <button type="button" onClick={() => handleAmazonInsert(false)} className="btn-tool" title="Inserir Producte Amazon">📦 Amazon</button>
                <style>{`
                   .btn-tool {
                     background: white;
@@ -882,8 +922,9 @@ export default function Dashboard() {
                <button type="button" onClick={() => applyStyle("### ", "", true)} className="btn-tool" title="Encapçalament 3">H3</button>
                <button type="button" onClick={() => applyStyle("**", "**", true)} className="btn-tool" style={{ fontWeight: 800 }} title="Negreta">B</button>
                <button type="button" onClick={() => applyStyle("*", "*", true)} className="btn-tool" style={{ fontStyle: 'italic' }} title="Cursiva">I</button>
-               <div style={{ width: '1px', background: 'var(--gray-300)', margin: '0 0.5rem' }}></div>
-               <button type="button" onClick={() => handleYouTubeInsert(true)} className="btn-tool" title="Inserir Vídeo de YouTube">📺 YouTube</button>
+                <div style={{ width: '1px', background: 'var(--gray-300)', margin: '0 0.5rem' }}></div>
+                <button type="button" onClick={() => handleYouTubeInsert(true)} className="btn-tool" title="Inserir Vídeo de YouTube">📺 YouTube</button>
+                <button type="button" onClick={() => handleAmazonInsert(true)} className="btn-tool" title="Inserir Producte Amazon">📦 Amazon</button>
             </div>
             <textarea 
               ref={pageContentRef}

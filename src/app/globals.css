@@ -102,3 +102,96 @@ a:hover {
     color-scheme: dark;
   }
 }
+
+/* Amazon Affiliate Card Styles */
+.amazon-card {
+  display: flex;
+  background: var(--background);
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 2rem 0;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+.amazon-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+  border-color: #f97316; /* Amazon orange */
+}
+
+.amazon-card-image {
+  flex: 0 0 200px;
+  background: white;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--gray-200);
+}
+
+.amazon-card-image img {
+  max-width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  margin: 0 !important; /* Override markdown img styles */
+  box-shadow: none !important;
+}
+
+.amazon-card-content {
+  flex: 1;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.amazon-card-content h3 {
+  margin: 0 0 0.5rem 0 !important;
+  font-size: 1.25rem !important;
+  color: var(--primary-dark) !important;
+  line-height: 1.3;
+}
+
+.amazon-card-price {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #c2410c; /* Deep orange */
+  margin-bottom: 1rem;
+}
+
+.amazon-card-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #fbbf24; /* Amazon yellow/orange */
+  background: linear-gradient(to bottom, #f7dfa1, #f0c14b);
+  border: 1px solid #a88734;
+  color: #111 !important;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  width: fit-content;
+}
+
+.amazon-card-button:hover {
+  background: linear-gradient(to bottom, #f5d78e, #eeb933);
+  border-color: #9c7e31;
+}
+
+@media (max-width: 600px) {
+  .amazon-card {
+    flex-direction: column;
+  }
+  .amazon-card-image {
+    flex: 0 0 auto;
+    border-right: none;
+    border-bottom: 1px solid var(--gray-200);
+  }
+}
