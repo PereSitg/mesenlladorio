@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const docInputRef = useRef(null);
   const contentRef = useRef(null);
+  const pageContentRef = useRef(null);
   const [contentImageSnippet, setContentImageSnippet] = useState("");
   const [uploadingContentImage, setUploadingContentImage] = useState(false);
   
@@ -156,13 +157,13 @@ export default function Dashboard() {
       .replace(/--+/g, '-');               // Elimina guions dobles
   };
 
-  const applyStyle = (prefix, suffix = "") => {
-    const textarea = contentRef.current;
+  const applyStyle = (prefix, suffix = "", isPage = false) => {
+    const textarea = isPage ? pageContentRef.current : contentRef.current;
     if (!textarea) return;
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const text = formData.content;
+    const text = isPage ? pageFormData.content : formData.content;
     const selectedText = text.substring(start, end);
     
     const before = text.substring(0, start);
@@ -170,17 +171,48 @@ export default function Dashboard() {
     
     const newContent = `${before}${prefix}${selectedText}${suffix}${after}`;
     
-    // Actualitzem l'estat del contingut
-    setFormData({
-      ...formData,
-      content: newContent
-    });
+    if (isPage) {
+      setPageFormData(prev => ({ ...prev, content: newContent }));
+    } else {
+      setFormData(prev => ({ ...prev, content: newContent }));
+    }
 
     // Restaurar el focus i la selecció
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(start + prefix.length, end + prefix.length);
     }, 0);
+  };
+
+  const handleYouTubeInsert = (isPage = false) => {
+    const url = prompt("Enganxa la URL de YouTube o l'ID del vídeo:");
+    if (!url) return;
+    
+    const videoId = getYouTubeId(url);
+    if (!videoId) {
+      alert("No s'ha pogut extreure un ID de vídeo vàlid.");
+      return;
+    }
+    
+    const embedCode = `\n<iframe src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>\n`;
+    
+    const textarea = isPage ? pageContentRef.current : contentRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const text = isPage ? (isPage ? pageFormData.content : formData.content) : formData.content; 
+    // Corregim la lògica de text per si de cas
+    const currentText = isPage ? pageFormData.content : formData.content;
+    
+    const before = currentText.substring(0, start);
+    const after = currentText.substring(start);
+    const newContent = `${before}${embedCode}${after}`;
+
+    if (isPage) {
+      setPageFormData(prev => ({ ...prev, content: newContent }));
+    } else {
+      setFormData(prev => ({ ...prev, content: newContent }));
+    }
   };
 
   // --- ARTICLES ---
@@ -692,6 +724,8 @@ export default function Dashboard() {
                <div style={{ width: '1px', background: 'var(--gray-300)', margin: '0 0.5rem' }}></div>
                <button type="button" onClick={() => applyStyle("**", "**")} className="btn-tool" style={{ fontWeight: 800 }} title="Negreta">B</button>
                <button type="button" onClick={() => applyStyle("*", "*")} className="btn-tool" style={{ fontStyle: 'italic' }} title="Cursiva">I</button>
+               <div style={{ width: '1px', background: 'var(--gray-300)', margin: '0 0.5rem' }}></div>
+               <button type="button" onClick={() => handleYouTubeInsert(false)} className="btn-tool" title="Inserir Vídeo de YouTube">📺 YouTube</button>
                <style>{`
                   .btn-tool {
                     background: white;
@@ -841,7 +875,24 @@ export default function Dashboard() {
                   <textarea placeholder="Descripció SEO Google" value={pageFormData.seoDescription} onChange={e => setPageFormData({...pageFormData, seoDescription: e.target.value})} style={{ padding: '0.7rem', borderRadius: '8px', border: '1px solid #7dd3fc', minHeight: '60px' }} />
                </div>
             </div>
-            <textarea placeholder="Contingut (Markdown)" value={pageFormData.content} onChange={e => setPageFormData({...pageFormData, content: e.target.value})} required style={{ padding: '0.8rem', minHeight: '400px' }} />
+             {/* BARRA D'EINES DE PÀGINA */}
+             <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', background: '#f1f5f9', padding: '0.8rem', borderRadius: '12px 12px 0 0', border: '2px solid var(--primary-blue)', borderBottom: 'none', marginTop: '1rem' }}>
+               <button type="button" onClick={() => applyStyle("# ", "", true)} className="btn-tool" title="Encapçalament 1">H1</button>
+               <button type="button" onClick={() => applyStyle("## ", "", true)} className="btn-tool" title="Encapçalament 2">H2</button>
+               <button type="button" onClick={() => applyStyle("### ", "", true)} className="btn-tool" title="Encapçalament 3">H3</button>
+               <button type="button" onClick={() => applyStyle("**", "**", true)} className="btn-tool" style={{ fontWeight: 800 }} title="Negreta">B</button>
+               <button type="button" onClick={() => applyStyle("*", "*", true)} className="btn-tool" style={{ fontStyle: 'italic' }} title="Cursiva">I</button>
+               <div style={{ width: '1px', background: 'var(--gray-300)', margin: '0 0.5rem' }}></div>
+               <button type="button" onClick={() => handleYouTubeInsert(true)} className="btn-tool" title="Inserir Vídeo de YouTube">📺 YouTube</button>
+            </div>
+            <textarea 
+              ref={pageContentRef}
+              placeholder="Contingut (Markdown)" 
+              value={pageFormData.content} 
+              onChange={e => setPageFormData({...pageFormData, content: e.target.value})} 
+              required 
+              style={{ padding: '0.8rem', minHeight: '400px', borderRadius: '0 0 8px 8px', border: '1px solid var(--gray-300)', marginTop: '-1px' }} 
+            />
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button type="submit" className="btn" disabled={submitLoading} style={{ flex: 1 }}>
                 {submitLoading ? 'Sincronitzant...' : 'Desar Pàgina'}
