@@ -216,31 +216,14 @@ export default function Dashboard() {
   };
 
   const handleAmazonInsert = (isPage = false) => {
-    const title = prompt("Títol del producte:");
-    if (!title) return;
-    const link = prompt("Enllaç d'afiliat (https://...):");
-    if (!link) return;
-    const img = prompt("URL de la imatge (opcional):") || 'https://via.placeholder.com/200x200?text=Producte';
-    const preu = prompt("Preu (opcional, ex: 19,99€):") || '';
-
-    const html = `\n<a href="${link}" target="_blank" rel="noopener noreferrer" class="amazon-card">
-  <div class="amazon-card-image">
-    <img src="${img}" alt="${title}">
-  </div>
-  <div class="amazon-card-content">
-    <h3>${title}</h3>
-    ${preu ? `<p class="amazon-card-price">${preu}</p>` : ''}
-    <div class="amazon-card-button">Veure a Amazon</div>
-  </div>
-</a>\n`;
+    const tag = `\n<amazon-card \n  title="Nom del Producte" \n  url="https://amzn.to/..." \n  image="https://..." \n  price="19,99€" \n/>\n`;
 
     if (isPage) {
-      setPageFormData(prev => ({ ...prev, content: prev.content + html }));
+      setPageFormData(prev => ({ ...prev, content: prev.content + tag }));
     } else {
-      setFormData(prev => ({ ...prev, content: prev.content + html }));
+      setFormData(prev => ({ ...prev, content: prev.content + tag }));
     }
-    
-    alert("Producte inserit al final del text! Pots moure'l on vulguis.");
+    alert("S'ha afegit el codi del producte al final de l'article. Ara només has de canviar les dades dins de les cometes!");
   };
 
   // --- ARTICLES ---

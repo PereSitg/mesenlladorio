@@ -52,6 +52,8 @@ export async function generateMetadata({ params }) {
   };
 }
 
+import AmazonProduct from '@/components/AmazonProduct';
+
 export default async function BlogPost({ params }) {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
@@ -74,7 +76,14 @@ export default async function BlogPost({ params }) {
          <span>{new Date(post.createdAt).toLocaleDateString('ca-ES', { month: 'long', year: 'numeric' })}</span>
       </div>
       <div className="markdown-content" style={{ fontSize: '1.25rem', lineHeight: 1.8, color: 'rgba(0,0,0,0.85)' }}>
-        <ReactMarkdown rehypePlugins={[rehypeRaw]}>{post.content}</ReactMarkdown>
+        <ReactMarkdown 
+          rehypePlugins={[rehypeRaw]}
+          components={{
+            'amazon-card': ({node, ...props}) => <AmazonProduct {...props} />
+          }}
+        >
+          {post.content}
+        </ReactMarkdown>
       </div>
 
       <ShareButtons 

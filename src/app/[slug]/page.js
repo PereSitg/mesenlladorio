@@ -49,6 +49,8 @@ export async function generateMetadata({ params }) {
   };
 }
 
+import AmazonProduct from '@/components/AmazonProduct';
+
 export default async function DynamicPage({ params }) {
   const { slug } = await params;
   const page = await getPageBySlug(slug);
@@ -67,7 +69,14 @@ export default async function DynamicPage({ params }) {
       </header>
 
       <div className="markdown-content" style={{ fontSize: '1.2rem', lineHeight: 1.8, color: 'rgba(0,0,0,0.8)' }}>
-        <ReactMarkdown rehypePlugins={[rehypeRaw]}>{page.content}</ReactMarkdown>
+        <ReactMarkdown 
+          rehypePlugins={[rehypeRaw]}
+          components={{
+            'amazon-card': ({node, ...props}) => <AmazonProduct {...props} />
+          }}
+        >
+          {page.content}
+        </ReactMarkdown>
       </div>
 
       <ShareButtons 
