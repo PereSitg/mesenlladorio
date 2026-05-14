@@ -237,6 +237,14 @@ export default function Dashboard() {
       console.error("Error al carregar dades d'Amazon", err);
     }
 
+    // Si falta informació clau, la demanem per seguretat (Pla B)
+    if (title === "Nom del Producte" || !image || image === "https://...") {
+      alert("Amazon ha bloquejat l'extracció automàtica. Si us plau, confirma les dades manualment per crear la targeta correctament.");
+      title = prompt("Títol del producte:", title) || title;
+      image = prompt("URL de la imatge:", image) || image;
+      price = prompt("Preu:", price) || price;
+    }
+
     const tag = `\n<amazon-card \n  title="${title}" \n  url="${url}" \n  image="${image}" \n  price="${price}" \n/>\n`;
 
     if (isPage) {
