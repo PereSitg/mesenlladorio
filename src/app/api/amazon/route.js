@@ -38,32 +38,40 @@ export async function GET(request) {
     const imageMatch = html.match(/id="landingImage"[^>]*src="([^"]+)"/i) || html.match(/["']large["']\s*:\s*["']([^"']+)["']/i);
     const image = imageMatch ? imageMatch[1] : '';
 
-    // Preu (Intentem diversos selectors comuns)
+    // Preu (Prioritzem la classe a-offscreen que sol tenir el format net "123,45€")
     const priceSelectors = [
-      /<span class="a-offscreen">([^<]+)<\/span>/i,
-      /<span class="a-price-whole">([^<]+)<\/span>/i,
+      /<span class="a-price-whole">([^<]+)<\/span>/i, // Busquem les parts si la offscreen falla
       /id="priceblock_ourprice"[^>]*>([^<]+)</i,
       /id="kindle-price"[^>]*>([^<]+)</i
     ];
     
-    let price = '';
-    for (const selector of priceSelectors) {
-      const match = html.match(selector);
-      if (match) {
-        price = match[1].trim();
-        // Si hem agafat el "whole", mirem si hi ha fracció
-        if (selector.source.includes('a-price-whole')) {
-          const fraction = html.match(/<span class="a-price-fraction">([^<]+)<\/span>/i);
-          const symbol = html.match(/<span class="a-price-symbol">([^<]+)<\/span>/i);
-          if (fraction) price += ',' + fraction[1].trim();
-          if (symbol) price += symbol[1].trim();
+    // Primer intentem buscar la classe offscreen que és la més neta
+    const offscreenMatch = html.match(/<span class="a-price"[^>]*>.*?<span class="a-offscreen">([^<]+)<\/span>.*?<\/span>/is) || 
+                          html.match(/<span class="a-offscreen">([^<]+)<\/span>/i);
+    
+    let price = offscreenMatch ? offscreenMatch[1].trim() : '';
+
+    if (!price) {
+      for (const selector of priceSelectors) {
+        const match = html.match(selector);
+        if (match) {
+          price = match[1].trim();
+          if (selector.source.includes('a-price-whole')) {
+            const fraction = html.match(/<span class="a-price-fraction">([^<]+)<\/span>/i);
+            const symbol = html.match(/<span class="a-price-symbol">([^<]+)<\/span>/i);
+            if (fraction) price += ',' + fraction[1].trim();
+            if (symbol) price += symbol[1].trim();
+          }
+          break;
         }
-        break;
       }
     }
 
+    // Neteja final del preu (a vegades venen amb espais o caràcters estranys)
+    price = price.replace(/&nbsp;/g, ' ').trim();
+
     return NextResponse.json({
-      title: title.replace('Amazon.es: ', '').split(' : Amazon.es')[0],
+      title: title.replace('Amazon.es: ', '').split(' : Amazon.es')[0].split(' : Informática')[0].trim(),
       image,
       price,
       url: response.url
